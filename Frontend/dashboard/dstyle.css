@@ -190,3 +190,133 @@ body {
 
 
 
+
+
+:root {
+  --radius: 12px;
+  --border: 4px;
+}
+:root {
+  --radius: 14px;
+}
+
+/* PREMIUM SPIN BUTTON */
+.hk-button {
+  padding: 10px 26px;
+  background: #111827;
+  color: #fff;
+  border-radius: var(--radius);
+  border: none;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  width: 100%;
+  display: block;
+  text-align: center;
+
+}
+
+.balance-card .hk-button {
+  margin-top: 15px;
+}
+
+/* Spinning Glow Ring */
+.hk-button::before {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: var(--radius);
+
+  background: conic-gradient(
+    from 0deg,
+    #0066ff,
+    #00c6ff,
+    #0066ff
+  );
+
+  animation: spin 4s linear infinite;
+  filter: blur(6px); /* smooth glow */
+  z-index: 0;
+}
+
+/* Inner Glass Layer */
+.hk-button::after {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  background: #1f2233;
+  border-radius: var(--radius);
+  z-index: 1;
+}
+
+/* Text */
+.hk-button span {
+  position: relative;
+  z-index: 2;
+}
+
+/* Smooth Spin */
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+
+
+
+/* ========================= */
+/* REAL MOBILE APP STYLE */
+/* ========================= */
+
+@media (max-width: 768px) {
+
+  body {
+    background: #e9e1ff;
+  }
+
+  .dashboard-shell {
+    width: 100%;
+    margin: 0;
+    border-radius: 25px 25px 0 0;
+    padding: 20px;
+  }
+
+  .cards-row {
+    flex-direction: column;
+  }
+
+  .balance-card,
+  .budget-card {
+    width: 100%;
+  }
+
+  .balance-card h1 {
+    font-size: 26px;
+  }
+
+  .budget-inner {
+    justify-content: flex-start;
+    gap: 15px;
+  }
+
+  /* Make bottom nav fixed like app */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: #ffffff;
+    padding: 10px 0;
+    box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
+    border-radius: 20px 20px 0 0;
+  }
+
+  .dashboard-shell {
+    padding-bottom: 90px;
+  }
+
+}
