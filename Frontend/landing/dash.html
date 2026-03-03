@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <title>WMS Dashboard</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='landing/dstyle.css') }}" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="dashstyle.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -27,13 +28,41 @@
       <div class="balance-card">
         <p>Total Balance</p>
         <h1>₹14,206</h1>
+
+  
         <div class="card-footer">
-          <span>**** 6345</span>
-          <button>INR ▾</button>
+          <!-- <span>**** 6345</span>
+          <button>INR ▾</button> -->
+          
+        <button class="hk-button small-btn">
+    <span>Pay</span>
+  </button>
         </div>
       </div>
 
-      <div class="budget-card">
+ <div class="budget-card">
+  <h3>Monthly Budget</h3>
+  <div class="budget-inner donut-wrapper">
+    <!-- SVG Donut -->
+    <svg class="donut" width="100" height="100">
+      <circle class="donut-bg" r="45" cx="50" cy="50"/>
+      <circle class="donut-fg" r="45" cx="50" cy="50"/>
+    </svg>
+    
+    <!-- Horizontal budget text -->
+    <div class="budget-text">
+      <strong>₹2,864</strong> of <strong>₹4,000</strong>
+    </div>
+    
+    <!-- Center percentage & icon -->
+    <div class="donut-center">
+      <!-- <span class="percentage">0%</span> -->
+      <!-- <img src="https://img.icons8.com/color/48/money.png" alt="money-icon"/> -->
+    </div>
+  </div>
+</div>
+
+      <!-- <div class="budget-card">
         <h3>Monthly Budget</h3>
         <div class="budget-inner">
           <div class="progress-ring">
@@ -41,10 +70,10 @@
           </div>
           <div>
             <strong>₹2,864</strong> of ₹4,000
-            <p>₹2864 of ₹4000 left</p>
+            
           </div>
         </div>
-      </div>
+      </div> -->
 
     </div>
 
@@ -98,6 +127,37 @@
 
   </section>
 </div>
+
+
+<script>
+  // Animate Donut Fill
+  document.addEventListener("DOMContentLoaded", () => {
+    const circle = document.querySelector(".donut-fg");
+    const percentageText = document.querySelector(".percentage");
+
+    const percent = 58; // your monthly budget %
+    const radius = 45;
+    const circumference = 2 * Math.PI * radius;
+
+    const offset = circumference * (1 - percent / 100);
+    circle.style.strokeDashoffset = circumference; // start empty
+
+    // Animate
+    setTimeout(() => {
+      circle.style.strokeDashoffset = offset;
+    }, 100);
+
+    // Animate percentage counter
+    let count = 0;
+    const interval = setInterval(() => {
+      if (count <= percent) {
+        percentageText.textContent = count + "%";
+        count++;
+      } else clearInterval(interval);
+    }, 20);
+  });
+</script>
+
 
 </body>
 </html>

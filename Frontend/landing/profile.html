@@ -1,58 +1,117 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Profile</title>
-  <link rel="stylesheet" href="profile.css">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WMS – Profile</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-<div class="bg-wrapper">
-
-  <!-- MAIN CARD -->
-  <div class="main-card">
-
-    <!-- TOP HEADER -->
-    <div class="profile-header">
-      <div class="profile-img"></div>
-      <h2>Rohan Patel</h2>
-      <p>rohan@email.com</p>
+  <!-- HEADER -->
+  <header class="header">
+    <div class="logo">
+      <img src="../img/wallet.svg" alt="">
+      <span>WMS</span>
     </div>
+    <a href="index.html" class="launch-btn">HOME</a>
+  </header>
 
-    <!-- PROFILE DETAILS -->
-    <div class="profile-content">
+  <!-- MAIN -->
+  <main class="features-section">
+    <h1 class="features-title">Profile</h1>
 
-      <div class="info-card">
-        <span>Phone Number</span>
-        <strong>+91 9876543210</strong>
+    <div class="auth-card">
+      <div id="profile-view">
+
+        <div class="auth-field">
+          <label for="fullname">Full Name</label>
+          <input id="fullname" name="fullname" type="text" value="Jane Doe" readonly />
+        </div>
+
+        <div class="auth-field">
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" value="jane.doe@example.com" readonly />
+        </div>
+
+        <div class="auth-field">
+          <label for="phone">Phone</label>
+          <input id="phone" name="phone" type="tel" value="+1 555-123-4567" readonly />
+        </div>
+
+        <div style="display:flex;gap:12px;align-items:center;justify-content:center;margin-top:12px;">
+          <button id="edit-btn" class="primary auth-btn">Edit Profile</button>
+          <button id="back-btn" class="secondary" style="padding:10px 20px;border-radius:8px;">Go Back</button>
+        </div>
+
       </div>
 
-      <div class="info-card">
-        <span>Member Since</span>
-        <strong>January 2025</strong>
-      </div>
-
-      <div class="info-card">
-        <span>Wallet Type</span>
-        <strong>Premium</strong>
-      </div>
-
-      <button class="edit-btn">Edit Profile</button>
-
+      <p id="msg" style="text-align:center;margin-top:12px;color:#c33"></p>
     </div>
+  </main>
 
-    <!-- BOTTOM NAV -->
-    <div class="bottom-nav">
-      <span>Home</span>
-      <span>Analysis</span>
-      <span>Wallets</span>
-      <span class="active">Profile</span>
-    </div>
+  <script>
+    (function(){
+      const editBtn = document.getElementById('edit-btn');
+      const backBtn = document.getElementById('back-btn');
+      const msg = document.getElementById('msg');
+      const inputs = [
+        document.getElementById('fullname'),
+        document.getElementById('email'),
+        document.getElementById('phone')
+      ];
 
-  </div>
+      backBtn.addEventListener('click', function(e){
+        e.preventDefault();
+        if (window.history.length > 1) window.history.back(); else window.location.href = 'index.html';
+      });
 
-</div>
+      let editing = false;
+      editBtn.addEventListener('click', function(e){
+        e.preventDefault();
+        if (!editing) {
+          // enter edit mode
+          editing = true;
+          inputs.forEach(i => i.removeAttribute('readonly'));
+          editBtn.textContent = 'Save';
+          // add cancel button
+          const cancel = document.createElement('button');
+          cancel.id = 'cancel-btn';
+          cancel.className = 'secondary';
+          cancel.textContent = 'Cancel';
+          cancel.style.padding = '10px 20px';
+          cancel.style.borderRadius = '8px';
+          editBtn.parentNode.appendChild(cancel);
+          cancel.addEventListener('click', function(ev){
+            ev.preventDefault();
+            // revert changes (in this simple version we reload original values)
+            inputs[0].value = 'Jane Doe';
+            inputs[1].value = 'jane.doe@example.com';
+            inputs[2].value = '+1 555-123-4567';
+            finishEdit();
+          });
+        } else {
+          // save
+          // basic validation
+          if (!inputs[0].value.trim() || !inputs[1].value.trim()) {
+            msg.textContent = 'Name and email are required.';
+            return;
+          }
+          msg.textContent = 'Profile saved.';
+          setTimeout(()=> msg.textContent = '', 2500);
+          finishEdit();
+        }
+      });
+
+      function finishEdit(){
+        editing = false;
+        inputs.forEach(i => i.setAttribute('readonly',''));
+        editBtn.textContent = 'Edit Profile';
+        const cancel = document.getElementById('cancel-btn');
+        if (cancel) cancel.remove();
+      }
+    })();
+  </script>
 
 </body>
 </html>
