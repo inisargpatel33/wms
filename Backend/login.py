@@ -53,7 +53,7 @@ def login():
             cursor.close()
             conn.close()
 
-        return redirect(url_for('login'))
+        
 
     return render_template("login.html")
 
