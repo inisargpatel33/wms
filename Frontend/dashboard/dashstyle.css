@@ -21,7 +21,7 @@ body {
   content: "";
   position: absolute;
   inset: 0;
-  background-image: url("img/Picsart_26-02-22_20-29-16-274.jpg.jpeg");
+  background-image: url("../img/Picsart_26-02-22_20-29-16-274.jpg.jpeg");
   background-repeat: no-repeat;
   background-size: cover;
   background-position: top center;
@@ -188,236 +188,208 @@ body {
   opacity: 1;
 }
 
-/* ===========================
-   RESPONSIVE DESIGN
-   =========================== */
 
-/* Tablets */
-@media (max-width: 992px) {
-  .dashboard-shell {
-    width: 92%;
-    padding: 28px;
-    border-radius: 30px;
-  }
 
-  .top-bar {
-    padding: 22px 30px;
-  }
 
-  .cards-row {
-    gap: 18px;
-  }
 
-  .balance-card h1 {
-    font-size: 34px;
+:root {
+  --radius: 12px;
+  --border: 4px;
+}
+:root {
+  --radius: 14px;
+}
+
+/* PREMIUM SPIN BUTTON */
+.hk-button {
+  padding: 10px 26px;
+  background: #111827;
+  color: #fff;
+  border-radius: var(--radius);
+  border: none;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  width: 100%;
+  display: block;
+  text-align: center;
+
+}
+
+.balance-card .hk-button {
+  margin-top: 15px;
+}
+
+/* Spinning Glow Ring */
+.hk-button::before {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: var(--radius);
+
+  background: conic-gradient(
+    from 0deg,
+    #0066ff,
+    #00c6ff,
+    #0066ff
+  );
+
+  animation: spin 4s linear infinite;
+  filter: blur(6px); /* smooth glow */
+  z-index: 0;
+}
+
+/* Inner Glass Layer */
+.hk-button::after {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  background: #1f2233;
+  border-radius: var(--radius);
+  z-index: 1;
+}
+
+/* Text */
+.hk-button span {
+  position: relative;
+  z-index: 2;
+}
+
+/* Smooth Spin */
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
   }
 }
 
-/* Mobile */
-@media (max-width: 768px) {
-  body {
-    background: #efe9ff;
-  }
 
-  .top-bar {
-    padding: 18px 20px;
-    font-size: 14px;
+
+
+/* ========================= */
+/* REAL MOBILE APP STYLE */
+/* ========================= */
+
+@media (max-width: 768px) {
+
+  body {
+    background: #e9e1ff;
   }
 
   .dashboard-shell {
-    width: 94%;
-    margin: 20px auto;
-    padding: 22px;
-    border-radius: 26px;
+    width: 100%;
+    margin: 0;
+    border-radius: 25px 25px 0 0;
+    padding: 20px;
   }
 
-  /* Stack cards vertically */
   .cards-row {
     flex-direction: column;
   }
 
   .balance-card,
   .budget-card {
-    padding: 22px;
+    width: 100%;
   }
 
   .balance-card h1 {
-    font-size: 32px;
+    font-size: 26px;
   }
 
   .budget-inner {
-    flex-direction: column;
-    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 15px;
   }
 
-  .progress-ring {
-    margin-bottom: 10px;
-  }
-
-  .accounts h2 {
-    font-size: 18px;
-  }
-
-  .account {
-    padding: 14px;
-    font-size: 14px;
-  }
-
-  /* Bottom nav fixed for mobile */
+  /* Make bottom nav fixed like app */
   .bottom-nav {
     position: fixed;
     bottom: 0;
     left: 0;
     width: 100%;
-    background: #f9f9ff;
+    background: #ffffff;
     padding: 10px 0;
-    box-shadow: 0 -10px 25px rgba(0,0,0,0.08);
-    border-radius: 18px 18px 0 0;
+    box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
+    border-radius: 20px 20px 0 0;
   }
 
-  .bg-wrapper {
-    padding-bottom: 90px; /* space for nav */
+  .dashboard-shell {
+    padding-bottom: 90px;
   }
+
 }
 
-/* Small phones */
-@media (max-width: 480px) {
-  .balance-card h1 {
-    font-size: 28px;
-  }
 
-  .card-footer button {
-    padding: 6px 14px;
-    font-size: 12px;
-  }
 
-  .nav-btn {
-    font-size: 12px;
-  }
-}
 
-/* ===========================
-   MICRO INTERACTIONS
-   =========================== */
-
-/* Card hover (desktop only) */
-@media (hover: hover) {
-  .balance-card,
-  .budget-card {
-    transition: transform 0.35s ease, box-shadow 0.35s ease;
-  }
-
-  .balance-card:hover,
-  .budget-card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 25px 50px rgba(0,0,0,0.25);
-  }
-
-  .account {
-    transition: background 0.3s ease, transform 0.3s ease;
-  }
-
-  .account:hover {
-    background: rgba(0,0,0,0.03);
-    transform: translateX(6px);
-  }
-}
-
-/* Button tap animation */
-button:active {
-  transform: scale(0.96);
-}
-
-.nav-btn {
+/* Donut wrapper: horizontal layout */
+.donut-wrapper {
   position: relative;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-top: 15px;
 }
 
-.nav-btn.active::after {
-  content: "";
+/* Donut circle */
+.donut {
+  transform: rotate(-90deg);
+}
+
+.donut-bg {
+  fill: transparent;
+  stroke: #eee;
+  stroke-width: 10;
+}
+
+.donut-fg {
+  fill: transparent;
+  stroke: #f49b6c;
+  stroke-width: 10;
+  stroke-linecap: round;
+  stroke-dasharray: 283; /* 2 * π * r */
+  stroke-dashoffset: 283; /* start empty */
+  transition: stroke-dashoffset 1.5s ease;
+}
+
+/* Center percentage & icon inside donut */
+.donut-center {
   position: absolute;
-  bottom: -6px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 22px;
-  height: 4px;
-  border-radius: 10px;
-  background: #f49b6c;
-}
-
-.dashboard-shell {
-  backdrop-filter: blur(10px);
-}
-
-/* ADD CATEGORY BUTTON */
-.add-category-btn {
-  margin-top: 12px;
-  padding: 10px 16px;
-  border-radius: 20px;
-  border: none;
-  background: #1f2233;
-  color: #fff;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-/* MODAL */
-.modal-overlay {
-  position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.4);
-  display: none;
+  display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  z-index: 999;
+  font-weight: bold;
+  color: #1f2233;
+  font-size: 16px;
 }
 
-.modal {
-  background: #fff;
-  padding: 25px;
-  border-radius: 20px;
-  width: 90%;
-  max-width: 320px;
+.donut-center img {
+  width: 24px;
+  margin-top: 4px;
 }
 
-.modal h3 {
-  margin-bottom: 15px;
-}
-
-.modal input {
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 12px;
-  border-radius: 10px;
-  border: 1px solid #ddd;
-}
-
-.modal-actions {
+/* Budget text horizontal next to donut */
+.budget-text {
   display: flex;
-  justify-content: space-between;
+  flex-direction: row;
+  gap: 5px;
+  font-size: 16px;
+  color: #333;
+  font-weight: bold;
 }
 
-.modal-actions button {
-  padding: 8px 14px;
-  border-radius: 14px;
-  border: none;
-  cursor: pointer;
+/* Mobile adjustment */
+@media (max-width: 768px) {
+  .donut-wrapper {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+  .budget-text {
+    text-align: center;
+  }
 }
-
-#addBtn {
-  background: #f49b6c;
-  color: #fff;
-}
-
-
-.warning-text {
-  font-size: 13px;
-  color: #c0392b;
-  margin: 10px 0 20px;
-  line-height: 1.4;
-}
-
-#discardConfirm {
-  background: #e74c3c;
-  color: #fff;
-}
-
