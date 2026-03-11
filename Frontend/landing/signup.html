@@ -1,46 +1,87 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>WMS – Sign Up</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='landing/style.css') }}">
 </head>
 <body>
+
+  <!-- HEADER -->
   <header class="header">
     <div class="logo">
-      <img src="../img/wallet.svg" alt="">
+      <img src="{{ url_for('static', filename='img/wallet.svg') }}" alt="Wallet">
       <span>WMS</span>
     </div>
-    <a href="index.html" class="launch-btn">HOME</a>
+
+    <!-- Change this to your actual home route name if different -->
+    <a href="/" class="launch-btn">HOME</a>
   </header>
 
+  <!-- MAIN SECTION -->
   <main class="features-section">
     <h1 class="features-title">Create your account</h1>
 
     <div class="auth-card">
-      <form id="signup-form">
+
+      
+
+      <!-- SIGNUP FORM -->
+      <form method="POST" action="{{ url_for('register') }}">
+
         <div class="auth-field">
-          <label for="name">Full name</label>
-          <input id="name" name="name" type="text" required />
+          <label>Full Name</label>
+          <input type="text" name="name" required>
         </div>
+
         <div class="auth-field">
-          <label for="email">Email</label>
-          <input id="email" name="email" type="email" required />
+          <label>Email</label>
+          <input type="email" name="email" required>
         </div>
+
         <div class="auth-field">
-          <label for="password">Password</label>
-          <input id="password" name="password" type="password" required />
+          <label>Password</label>
+          <input type="password" name="password" required>
         </div>
+
         <div class="auth-field">
-          <label for="confirm">Confirm Password</label>
-          <input id="confirm" name="confirm" type="password" required />
+          <label>Confirm Password</label>
+          <input type="password" name="confirm" required>
         </div>
-        <div style="display:flex;gap:12px;align-items:center;justify-content:center;margin-top:12px;">
-          <button type="submit" class="primary auth-btn">Sign Up</button>
-          <a href="login.html" class="secondary" style="padding:10px 20px;border-radius:8px;text-decoration:none;display:inline-flex;align-items:center;">Sign In</a>
+        
+        <!-- ✅ SAFE FLASH MESSAGE BLOCK -->
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          {% for message in messages %}
+            <p style="text-align:center;
+                      margin-bottom:15px;
+                      font-weight:bold;
+                      color:red;">
+              {{ message }}
+            </p>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+        <div style="display:flex; gap:12px; align-items:center; justify-content:center; margin-top:15px;">
+
+          <button type="submit" class="primary auth-btn">
+            Sign Up
+          </button>
+
+          <!-- Direct URL to avoid endpoint error -->
+          <a href="/login"
+             class="secondary"
+             style="padding:10px 20px; border-radius:8px; text-decoration:none; display:inline-flex; align-items:center;">
+            Sign In
+          </a>
+
         </div>
+
       </form>
-      <p id="msg" style="text-align:center;margin-top:12px;color:#c33"></p>
+
     </div>
   </main>
+
+</body>
+</html>

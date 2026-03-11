@@ -14,7 +14,7 @@
   <header class="top-bar">
     <div class="left">← <span>Overview</span></div>
     <div class="right">
-      🔔 <img src="https://i.pravatar.cc/36" /> <span>Rohan ▾</span>
+      <span>{{ name }} ▾</span>
     </div>
   </header>
 
@@ -26,10 +26,9 @@
 
       <div class="balance-card">
         <p>Total Balance</p>
-        <h1>₹14,206</h1>
+        <h1> ₹{{ balance }} </h1>
         <div class="card-footer">
-          <span>**** 6345</span>
-          <button>INR ▾</button>
+          <span> Wallet ID: {{ wallet_id  }} </span>
         </div>
       </div>
 
