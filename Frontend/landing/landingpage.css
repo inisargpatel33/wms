@@ -259,19 +259,8 @@ body {
   border-radius: 8px;
   border: 1px solid #e6e6ee;
   font-size: 1rem;
-  width: 100%;
-  box-sizing: border-box;
 }
 .auth-btn { padding: 10px 24px; border-radius: 10px; }
-
-/* utility for profile action buttons */
-.action-group {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  justify-content: center;
-  margin-top: 12px;
-}
 
 .feature-card {
   background: linear-gradient(135deg, #f6f7fb 60%, #e9e6ff 100%);
@@ -307,38 +296,6 @@ body {
   display: flex;
   justify-content: center;
   gap: 36px;
-}
-
-/* =========================
-   RESPONSIVE ADJUSTMENTS
-========================= */
-@media (max-width: 600px) {
-  .header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .launch-btn {
-    margin-top: 10px;
-  }
-
-  .features-title {
-    font-size: 2rem;
-  }
-
-  .auth-card {
-    width: 90%;
-    padding: 20px;
-  }
-
-  .action-group {
-    flex-direction: column;
-  }
-
-  .auth-btn,
-  .secondary {
-    width: 100%;
-  }
 }
 
 .footer-navbar nav ul li a {
@@ -519,67 +476,5 @@ body {
 
   .footer-copy {
     font-size: 0.85rem;
-  }
-}
-
-
-/* =========================
-   MAIN CARD HEADER (WMS)
-========================= */
-
-.card-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-
-  padding: 20px;
-
-  background: rgba(255, 255, 255, 0.18);
-  backdrop-filter: blur(8px);
-
-  border-radius: 14px;
-}
-
-/* WALLET ICON */
-.wallet-icon {
-  width: 32px;
-  height: 32px;
-  object-fit: contain;
-}
-
-/* WMS TEXT */
-.wms-text {
-  font-size: 18px;
-  font-weight: 600;
-  color: #ffffff;
-  letter-spacing: 0.5px;
-}
-
-/* PUSH MAIN CONTENT DOWN */
-.main-card .det {
-  margin-top: 40px;
-}
-
-/* =========================
-   MOBILE RESPONSIVE
-========================= */
-@media (max-width: 600px) {
-
-  .card-header {
-    padding: 14px;
-    gap: 10px;
-  }
-
-  .wallet-icon {
-    width: 26px;
-    height: 26px;
-  }
-
-  .wms-text {
-    font-size: 15px;
-  }
-
-  .main-card .det {
-    margin-top: 28px;
   }
 }

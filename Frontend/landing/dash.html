@@ -3,8 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <title>WMS Dashboard</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='landing/dstyle.css') }}" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='Frontend\landing\dashstyle.css') }}" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
 </head>
 <body>
 
@@ -13,10 +16,14 @@
   <!-- HEADER -->
   <header class="top-bar">
     <div class="left">← <span>Overview</span></div>
+
     <div class="right">
-      <span>{{ name }} ▾</span>
+      🔔
+      <img src="https://i.pravatar.cc/36" />
+      <span>Rohan ▾</span>
     </div>
   </header>
+
 
   <!-- MAIN WHITE CONTAINER -->
   <section class="dashboard-shell">
@@ -24,31 +31,50 @@
     <!-- TOP CARDS -->
     <div class="cards-row">
 
+      <!-- BALANCE CARD -->
       <div class="balance-card">
         <p>Total Balance</p>
-        <h1> ₹{{ balance }} </h1>
+        <h1>₹14,206</h1>
+
         <div class="card-footer">
-          <span> Wallet ID: {{ wallet_id  }} </span>
+          <button class="hk-button small-btn">
+            <span>Pay</span>
+          </button>
         </div>
       </div>
 
+
+      <!-- BUDGET CARD -->
       <div class="budget-card">
         <h3>Monthly Budget</h3>
-        <div class="budget-inner">
-          <div class="progress-ring">
-            <span>58%</span>
+
+        <div class="budget-inner donut-wrapper">
+
+          <!-- SVG Donut -->
+          <svg class="donut" width="100" height="100">
+            <circle class="donut-bg" r="45" cx="50" cy="50"></circle>
+            <circle class="donut-fg" r="45" cx="50" cy="50"></circle>
+          </svg>
+
+          <!-- Budget text -->
+          <div class="budget-text">
+            <strong>₹2,864</strong> of <strong>₹4,000</strong>
           </div>
-          <div>
-            <strong>₹2,864</strong> of ₹4,000
-            <p>₹2864 of ₹4000 left</p>
+
+          <!-- Center percentage -->
+          <div class="donut-center">
+            <span class="percentage">0%</span>
           </div>
+
         </div>
       </div>
 
     </div>
 
+
     <!-- ACCOUNTS -->
     <div class="accounts">
+
       <h2>Accounts</h2>
 
       <div class="account">
@@ -71,32 +97,75 @@
         </div>
         <div class="right">₹800 ›</div>
       </div>
+
     </div>
+
 
     <!-- BOTTOM NAV -->
     <nav class="bottom-nav">
-  <button class="nav-btn active">
-    🏠 <span>Home</span>
-  </button>
 
-  <button class="nav-btn">
-    📊 <span>Analysis</span>
-  </button>
+      <button class="nav-btn active">
+        🏠 <span>Home</span>
+      </button>
 
-  <button class="nav-btn">
-    💼 <span>Wallets</span>
-  </button>
+      <button class="nav-btn">
+        📊 <span>Analysis</span>
+      </button>
 
-  <button class="nav-btn">
-    👤 <span>Profile</span>
-  </button>
-</nav>
+      <button class="nav-btn">
+        💼 <span>Wallets</span>
+      </button>
 
+      <button class="nav-btn">
+        👤 <span>Profile</span>
+      </button>
 
-
+    </nav>
 
   </section>
 </div>
+
+
+
+<script>
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  const circle = document.querySelector(".donut-fg");
+  const percentageText = document.querySelector(".percentage");
+
+  const percent = 58;
+  const radius = 45;
+  const circumference = 2 * Math.PI * radius;
+
+  if(circle){
+    const offset = circumference * (1 - percent / 100);
+    circle.style.strokeDashoffset = circumference;
+
+    setTimeout(() => {
+      circle.style.strokeDashoffset = offset;
+    }, 100);
+  }
+
+  if(percentageText){
+    let count = 0;
+
+    const interval = setInterval(() => {
+
+      if (count <= percent) {
+        percentageText.textContent = count + "%";
+        count++;
+      } 
+      else {
+        clearInterval(interval);
+      }
+
+    }, 20);
+  }
+
+});
+
+</script>
 
 </body>
 </html>

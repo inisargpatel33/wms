@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Profile</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='landing/style.css') }}">
+  <link rel="stylesheet" href="profile.css">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
@@ -16,26 +16,26 @@
     <!-- TOP HEADER -->
     <div class="profile-header">
       <div class="profile-img"></div>
-      <h2>{{ name }}</h2>
-      <p>{{ email }}</p>
+      <h2>Rohan Patel</h2>
+      <p>rohan@email.com</p>
     </div>
 
     <!-- PROFILE DETAILS -->
     <div class="profile-content">
 
       <div class="info-card">
-      <span>Email ID</span>
-      <strong>{{ email }}</strong>
+        <span>Phone Number</span>
+        <strong>+91 9876543210</strong>
       </div>
 
       <div class="info-card">
         <span>Member Since</span>
-        <strong>{{ member_since }}</strong>
+        <strong>January 2025</strong>
       </div>
 
       <div class="info-card">
-        <span>Wallet ID</span>
-        <strong>{{ wallet_id }}</strong>
+        <span>Wallet Type</span>
+        <strong>Premium</strong>
       </div>
 
       <button class="edit-btn">Edit Profile</button>
