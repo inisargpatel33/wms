@@ -1,58 +1,134 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Profile</title>
-  <link rel="stylesheet" href="profile.css">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>WMS – Profile</title>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='landing/style.css') }}">
+
 </head>
+
 <body>
 
-<div class="bg-wrapper">
+<header class="header">
 
-  <!-- MAIN CARD -->
-  <div class="main-card">
+<div class="logo">
+<img src="{{ url_for('static', filename='img/wallet.svg') }}" alt="">
+<span>WMS</span>
+</div>
 
-    <!-- TOP HEADER -->
-    <div class="profile-header">
-      <div class="profile-img"></div>
-      <h2>Rohan Patel</h2>
-      <p>rohan@email.com</p>
-    </div>
+<a href="/dashboard" class="launch-btn">HOME</a>
 
-    <!-- PROFILE DETAILS -->
-    <div class="profile-content">
+</header>
 
-      <div class="info-card">
-        <span>Phone Number</span>
-        <strong>+91 9876543210</strong>
-      </div>
 
-      <div class="info-card">
-        <span>Member Since</span>
-        <strong>January 2025</strong>
-      </div>
+<main class="features-section">
 
-      <div class="info-card">
-        <span>Wallet Type</span>
-        <strong>Premium</strong>
-      </div>
+<h1 class="features-title">Profile</h1>
 
-      <button class="edit-btn">Edit Profile</button>
+<div class="auth-card">
 
-    </div>
+<form id="profileForm">
 
-    <!-- BOTTOM NAV -->
-    <div class="bottom-nav">
-      <span>Home</span>
-      <span>Analysis</span>
-      <span>Wallets</span>
-      <span class="active">Profile</span>
-    </div>
+<div class="auth-field">
+<label>Full Name</label>
+<input id="fullname" name="fullname" type="text" value="{{ user.fullname }}" readonly>
+</div>
 
-  </div>
+<div class="auth-field">
+<label>Email</label>
+<input id="email" name="email" type="email" value="{{ user.email }}" readonly>
+</div>
+
+<div class="auth-field">
+<label>Wallet ID</label>
+<input type="text" value="{{ user.wallet_id }}" readonly>
+</div>
+
+<div class="action-group">
+
+<button type="button" id="edit-btn" class="primary auth-btn">
+Edit Profile
+</button>
+
+<button type="button" id="back-btn" class="secondary">
+Go Back
+</button>
 
 </div>
+
+</form>
+
+<p id="msg" style="text-align:center;margin-top:12px;"></p>
+
+</div>
+
+</main>
+
+
+<script>
+
+const editBtn = document.getElementById("edit-btn");
+const fullname = document.getElementById("fullname");
+const email = document.getElementById("email");
+const msg = document.getElementById("msg");
+
+let editing = false;
+
+editBtn.onclick = () => {
+
+if(!editing){
+
+editing = true;
+
+fullname.removeAttribute("readonly");
+email.removeAttribute("readonly");
+
+editBtn.textContent = "Save";
+
+}
+
+else{
+
+fetch("/update_profile",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+
+fullname: fullname.value,
+email: email.value
+
+})
+
+})
+.then(res=>res.json())
+.then(data=>{
+
+msg.style.color="green";
+msg.textContent=data.message;
+
+fullname.setAttribute("readonly",true);
+email.setAttribute("readonly",true);
+
+editBtn.textContent="Edit Profile";
+
+editing=false;
+
+});
+
+}
+
+};
+
+</script>
 
 </body>
 </html>

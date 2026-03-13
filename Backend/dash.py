@@ -18,16 +18,21 @@ def get_db_connection():
         database="swm"
     )
 
+@app.route('/')
+def home():
+    return redirect(url_for('dashboard'))
 
 @app.route('/dashboard')
 def dashboard():
 
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
+    # Temporary test session
+    session['user_id'] = 9
+    session['fullname'] = "Test User"
 
     user_id = session['user_id']
 
-    conn, cursor = get_db_connection()
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
 
     cursor.execute(
         "SELECT wallet_id, balance FROM wallet WHERE user_id=%s",
@@ -52,6 +57,7 @@ def dashboard():
         wallet_id=wallet_id,
         balance=balance
     )
+
 
 if __name__ == "__main__":
     app.run(debug=True)
