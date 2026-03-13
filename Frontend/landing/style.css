@@ -542,15 +542,16 @@ body {
 
 /* WALLET ICON */
 .wallet-icon {
-  width: 32px;
+  width: 32px; /* match font size */
   height: 32px;
   object-fit: contain;
+  filter: brightness(0) invert(1); /* ensure white appearance */
 }
 
 /* WMS TEXT */
 .wms-text {
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 32px;
+  font-weight: 700;
   color: #ffffff;
   letter-spacing: 0.5px;
 }

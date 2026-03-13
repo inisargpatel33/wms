@@ -159,6 +159,42 @@ body {
   margin-top: 10px;
 }
 
+/* MAIN CARD HEADER (WMS) */
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  padding: 20px;
+
+  background: rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(8px);
+
+  border-radius: 14px;
+}
+
+/* WALLET ICON */
+.wallet-icon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+}
+
+/* WMS TEXT */
+.wms-text {
+  font-size: 32px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 0.5px;
+}
+
+/* PUSH MAIN CONTENT DOWN */
+.main-card .det {
+  margin-top: 20px;
+  margin-left: 8px;
+}
+
 /* SUB CARDS */
 .sub-card {
   opacity: 0;
@@ -430,6 +466,25 @@ body {
 
   .main-card p {
     font-size: 12px;
+  }
+
+  /* CARD HEADER MOBILE */
+  .card-header {
+    padding: 14px;
+    gap: 10px;
+  }
+
+  .wallet-icon {
+    width: 26px;
+    height: 26px;
+  }
+
+  .wms-text {
+    font-size: 15px;
+  }
+
+  .main-card .det {
+    margin-top: 28px;
   }
 
   /* FEATURES */
