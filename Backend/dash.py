@@ -18,46 +18,100 @@ def get_db_connection():
         database="swm"
     )
 
+
 @app.route('/')
 def home():
     return redirect(url_for('dashboard'))
 
+
 @app.route('/dashboard')
 def dashboard():
 
-    # Temporary test session
-    session['user_id'] = 9
-    session['fullname'] = "Test User"
+    # TEMPORARY testing (remove after login system)
+    if 'user_id' not in session:
+        session['user_id'] = 9
 
     user_id = session['user_id']
 
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
-    cursor.execute(
-        "SELECT wallet_id, balance FROM wallet WHERE user_id=%s",
-        (user_id,)
-    )
+    query = """
+    SELECT user.fullname, wallet.wallet_id, wallet.balance
+    FROM user
+    JOIN wallet ON user.id = wallet.user_id
+    WHERE user.id = %s
+    """
 
-    wallet = cursor.fetchone()
+    cursor.execute(query, (user_id,))
+    user = cursor.fetchone()
 
     cursor.close()
     conn.close()
 
-    if wallet:
-        wallet_id = wallet['wallet_id']
-        balance = wallet['balance']
-    else:
-        wallet_id = "Not Available"
-        balance = 0
+    if not user:
+        user = {
+            "fullname": "Unknown",
+            "wallet_id": "Not Available",
+            "balance": 0
+        }
 
-    return render_template(
-        "dash.html",
-        name=session['fullname'],
-        wallet_id=wallet_id,
-        balance=balance
-    )
+    return render_template("dash2.html", user=user)
 
+@app.route('/profile')
+def profile():
+
+    if 'user_id' not in session:
+        return redirect(url_for('dashboard'))
+
+    user_id = session['user_id']
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    query = """
+    SELECT user.fullname, user.email, wallet.wallet_id, wallet.balance
+    FROM user
+    JOIN wallet ON user.id = wallet.user_id
+    WHERE user.id = %s
+    """
+
+    cursor.execute(query, (user_id,))
+    user = cursor.fetchone()
+
+    cursor.close()
+    conn.close()
+
+    return render_template("profile.html", user=user)
+
+from flask import request, jsonify
+
+@app.route("/update_profile", methods=["POST"])
+def update_profile():
+
+    if 'user_id' not in session:
+        user_id = 9   # TEMPORARY testing (remove after login system)
+
+    user_id = session['user_id']
+
+    data = request.get_json()
+
+    fullname = data['fullname']
+    email = data['email']
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    query = "UPDATE user SET fullname=%s, email=%s WHERE id=%s"
+
+    cursor.execute(query,(fullname,email,user_id))
+
+    conn.commit()
+
+    cursor.close()
+    conn.close()
+
+    return jsonify({"message":"Profile Updated Successfully"})
 
 if __name__ == "__main__":
     app.run(debug=True)
