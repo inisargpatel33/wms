@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, render_template, url_for, redirect, session, request
+from flask import Flask, jsonify, render_template,url_for, redirect, session,request
 import mysql.connector
 
 app = Flask(
@@ -6,8 +6,6 @@ app = Flask(
     template_folder="../Frontend/landing",
     static_folder="../Frontend"
 )
-
-app.secret_key = "secretkey"
 
 # Database connection
 db = mysql.connector.connect(
@@ -17,18 +15,10 @@ db = mysql.connector.connect(
     database="swm"
 )
 
-@app.route("/")
-def home():
-    return redirect(url_for("profile"))
-
-
 @app.route("/profile")
 def profile():
 
-    # TEMP login for testing
-    session['user_id'] = 9
-
-    userid = session['user_id']
+    userid = 9   # testing user
 
     cursor = db.cursor(dictionary=True)
 
@@ -46,31 +36,32 @@ def profile():
 
     return render_template("profile.html", user=user)
 
+# Optional homepage (avoids 404 error)
+@app.route("/")
+def home():
+    return redirect(url_for('profile'))
 
 @app.route("/update_profile", methods=["POST"])
 def update_profile():
 
-    if 'user_id' not in session:
-        user_id=9
-
-    user_id = session['user_id']
-
     data = request.get_json()
 
-    fullname = data['fullname']
-    email = data['email']
+    fullname = data["fullname"]
+    email = data["email"]
+
+    userid = 9   # later you will use session
 
     cursor = db.cursor()
 
-    query = "UPDATE user SET fullname=%s, email=%s WHERE id=%s"
+    query = "UPDATE user SET fullname=%s,email=%s WHERE id=%s"
 
-    cursor.execute(query, (fullname, email, user_id))
+    cursor.execute(query,(fullname,email,userid))
 
     db.commit()
 
     cursor.close()
 
-    return jsonify({"message": "Profile Updated Successfully"})
+    return jsonify({"message":"Profile Updated Successfully"})
 
 
 if __name__ == "__main__":
