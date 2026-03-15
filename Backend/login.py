@@ -65,7 +65,7 @@ def dashboard():
     
     # 2. Render your dashboard template
     # Make sure dash.html is inside your ../Frontend/landing folder
-    return render_template("dash.html", name=session['fullname'])
+    return render_template("dash2.html", name=session['fullname'])
 
 @app.route('/signup')
 def signup():
