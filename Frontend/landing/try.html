@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+
+<html class="" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Wallet Management Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#a855f7",
+                        "primary-purple": "#a855f7",
+                        "accent-orange": "#c084fc",
+                        "background-light": "#f8f9ff",
+                        "background-dark": "#1a0b2e",
+                        "card-dark": "#ffffff",
+                        "border-dark": "#e2e8f0",
+                        "text-muted": "#64748b",
+                        "dark-purple": "#4c1d95"
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }</script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .active-nav {
+            background-color: #362254;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 font-display min-h-screen">
+<div class="flex h-screen overflow-hidden">
+<!-- Sidebar Navigation -->
+<aside class="w-64 border-r border-slate-200 bg-slate-50 flex flex-col shrink-0 hidden lg:flex">
+<div class="p-6 flex flex-col gap-8 h-full">
+<!-- User Profile Mini -->
+<div class="flex gap-3 items-center">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-2 border-primary" data-alt="User profile avatar of Rohan" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBHjDuBb92SmyXHldi5O3qv67qvkTcwOP69_GJIFLDxjM3CrNJHerVPqBl9nNNbU6xLWI2pW2r5luiLjvmFf0LWe49GpIj8rrkjKGq8aI_aenUIvKrQ4VuhihwoTcDRKVbBvrBUmwsJ8wzVbO4nzdipxCEENFBTJ53nrMT-2wB-jM4hzvKP1L5dxrqz3_jmqzX3ZjbHgv5DmlX7MIx3aChkimZuCX2sS-MqmjHjRLF1q65qdXD6bg0ZMpgGM6K1O92EkKusAVZVxA");'></div>
+<div class="flex flex-col">
+<h1 class="text-dark-purple text-base font-semibold leading-none">Rohan</h1>
+<p class="text-text-muted text-xs font-normal mt-1">Premium Plan</p>
+</div>
+</div>
+<!-- Navigation Links -->
+<nav class="flex flex-col gap-1"><a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary-purple text-white shadow-sm transition-all" href="#"><span class="material-symbols-outlined">home</span><span class="text-sm font-semibold">Home</span></a><a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-200/50 hover:text-dark-purple transition-colors" href="#"><span class="material-symbols-outlined">pie_chart</span><span class="text-sm font-medium">Analysis</span></a><a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-200/50 hover:text-dark-purple transition-colors" href="#"><span class="material-symbols-outlined">account_balance_wallet</span><span class="text-sm font-medium">Wallets</span></a><a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-200/50 hover:text-dark-purple transition-colors" href="#"><span class="material-symbols-outlined">person</span><span class="text-sm font-medium">Profile</span></a><a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-200/50 hover:text-dark-purple transition-colors" href="#"><span class="material-symbols-outlined">settings</span><span class="text-sm font-medium">Settings</span></a></nav>
+<div class="mt-auto">
+<div class="p-4 rounded-xl bg-white border border-primary-purple/20 shadow-sm">
+<p class="text-xs text-primary-purple font-extrabold uppercase tracking-wider">Storage</p>
+<p class="text-sm text-slate-600 mt-2">75% of limit used</p>
+<div class="w-full bg-border-dark h-1.5 rounded-full mt-2 overflow-hidden">
+<div class="h-full w-3/4 bg-primary-purple"></div>
+</div>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col overflow-y-auto">
+<!-- Header -->
+<header class="flex items-center justify-between border-b border-slate-200 py-4 sticky top-0 bg-white/80 backdrop-blur-md z-10 px-4 lg:px-8"><button class="lg:hidden p-2 -ml-2 text-slate-600 hover:bg-slate-100 rounded-lg">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<div class="flex items-center gap-6 flex-1 gap-2 lg:gap-6">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-3xl">account_balance</span>
+<h2 class="text-dark-purple text-xl font-bold tracking-tight">WalletX</h2>
+</div>
+<div class="relative max-w-md w-full group hidden md:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-primary transition-colors">search</span>
+<input class="w-full bg-slate-100 border-none rounded-lg pl-10 pr-4 py-2 text-slate-900 focus:ring-1 focus:ring-primary placeholder:text-slate-400 text-sm" placeholder="Search transactions..." type="text"/>
+</div>
+</div>
+
+
+<div class="flex items-center gap-4">
+<button class="p-2 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-dark-purple transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full border-2 border-background-dark"></span>
+</button>
+<button class="p-2 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-dark-purple transition-colors relative">
+<span class="material-symbols-outlined">help</span>
+</button>
+<div class="h-8 w-[1px] bg-slate-200 mx-2"></div>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" data-alt="User profile avatar of Rohan" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDSEW3IHfjKzvoKwVGWgHhXOm5dxLKfLCUmnHdvbUg3HPxlwte-y9RVt2nmePU3y9ZoxI3LaACG3iTY3eSX-h_ZWhF8gnMA0kjvDY423vDjux-wY2Oy5ODwJuf-LNYjOs_OwceHQWDZ3YIUd974eEm5jnqJMLaHC-6K2bZ-vXq7wC-YoCI94YcDrhmwFdCqEy5H1OgodCUReAkjLxQvMhgbgMIvpUuyYCJ0TEGWmv5PO3Qdq9-ooI4udpHqAwTwnX52JVi_Lfxqlg");'></div>
+</div>
+
+
+</header>
+<div class="space-y-8 max-w-7xl mx-auto w-full">
+<!-- Hero & Budget Row -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<!-- Total Balance Hero -->
+<div class="lg:col-span-2 relative overflow-hidden rounded-2xl bg-gradient-to-br from-dark-purple to-purple-900 p-8 shadow-2xl shadow-purple-200"><div class="relative z-10 flex flex-col h-full justify-between gap-12"><div><p class="text-purple-200 text-xs font-bold uppercase tracking-[0.2em]">Available Balance</p><h3 class="text-white font-extrabold mt-3 tracking-tight text-4xl lg:text-6xl">₹14,206<span class="text-purple-300 text-2xl font-light ml-1">.50</span></h3><div class="flex items-center gap-2 mt-4 inline-flex px-2 py-1 bg-white/10 rounded-full w-fit"><span class="material-symbols-outlined text-sm text-green-400">trending_up</span><span class="text-xs font-medium text-white">+2.4% from last month</span></div></div><div class="flex gap-4 flex-wrap"><button class="bg-white text-dark-purple px-8 py-3 rounded-xl font-bold text-sm transition-all hover:bg-purple-50 shadow-lg flex items-center gap-2 flex-1 justify-center sm:flex-none"><span class="material-symbols-outlined text-lg">payments</span> Pay Now</button><button class="bg-white/10 hover:bg-white/20 text-white px-8 py-3 rounded-xl font-bold text-sm transition-all border border-white/20 flex items-center gap-2 backdrop-blur-sm flex-1 justify-center sm:flex-none"><span class="material-symbols-outlined text-lg">add_circle</span> Add Money</button></div></div><div class="absolute -right-16 -bottom-16 w-80 h-80 bg-primary/20 rounded-full blur-[100px]"></div><div class="hidden md:flex absolute right-8 top-1/2 -translate-y-1/2 w-64 h-32 flex-col justify-end">
+<svg class="w-full h-full drop-shadow-lg overflow-visible" viewbox="0 0 100 40">
+<defs>
+<lineargradient id="trendGradient" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#c084fc" stop-opacity="0.6"></stop>
+<stop offset="100%" stop-color="#c084fc" stop-opacity="0"></stop>
+</lineargradient>
+</defs>
+<path d="M 0 35 Q 10 32, 20 25 T 40 22 T 60 15 T 80 18 T 100 8 V 40 H 0 Z" fill="url(#trendGradient)"></path>
+<path d="M 0 35 Q 10 32, 20 25 T 40 22 T 60 15 T 80 18 T 100 8" fill="none" stroke="#e9d5ff" stroke-linecap="round" stroke-width="1.5"></path>
+<circle class="animate-pulse" cx="100" cy="8" fill="#ffffff" r="2"></circle>
+</svg>
+<div class="flex justify-between mt-2 px-1">
+<span class="text-[10px] text-purple-300/60 font-medium uppercase tracking-tighter">Mon</span>
+<span class="text-[10px] text-purple-300/60 font-medium uppercase tracking-tighter">Wed</span>
+<span class="text-[10px] text-purple-300/60 font-medium uppercase tracking-tighter">Fri</span>
+<span class="text-[10px] text-purple-200 font-bold uppercase tracking-tighter">Today</span>
+</div>
+</div></div>
+<!-- Monthly Budget Card -->
+<div class="bg-white rounded-2xl p-6 border border-slate-100 flex flex-col items-center justify-between text-center shadow-sm"> <div class="flex justify-between w-full mb-4"><h4 class="text-slate-800 font-bold text-base">Monthly Budget</h4><span class="material-symbols-outlined text-slate-400">more_horiz</span></div> <div class="relative size-44 my-4"><svg class="size-full transform -rotate-90"><circle class="text-slate-100" cx="88" cy="88" fill="transparent" r="75" stroke="currentColor" stroke-width="12"></circle><circle class="text-primary-purple" cx="88" cy="88" fill="transparent" r="75" stroke="currentColor" stroke-dasharray="471" stroke-dashoffset="136" stroke-linecap="round" stroke-width="12"></circle></svg><div class="absolute inset-0 flex flex-col items-center justify-center"><span class="text-slate-900 text-3xl font-black">71%</span><span class="text-slate-400 text-[10px] uppercase font-bold tracking-widest">of goal</span></div></div> <div class="w-full pt-4 border-t border-slate-50"><p class="text-slate-900 text-lg font-bold">₹2,864 <span class="text-slate-400 text-sm font-medium">/ ₹4,000</span></p><p class="text-slate-500 text-xs mt-1 font-medium">₹1,136 remaining this month</p></div></div>
+</div>
+<!-- Dashboard Sections -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<!-- Transactions List -->
+<div class="lg:col-span-2 space-y-4"><div class="flex items-center justify-between px-1"><h4 class="text-slate-900 text-lg font-bold">Recent Transactions</h4><a class="text-primary-purple text-sm font-bold hover:text-dark-purple transition-colors" href="#">View All</a></div><div class="bg-white rounded-2xl border border-slate-100 overflow-hidden divide-y divide-slate-50 shadow-sm"><div class="flex items-center justify-between p-5 hover:bg-slate-50 transition-all cursor-pointer group"><div class="flex items-center gap-4">
+    <!-- <div class="size-12 rounded-xl bg-orange-50 text-orange-500 flex items-center justify-center"></div> -->
+<div><p class="text-slate-900 font-bold text-sm">Starbucks Coffee</p><p class="text-slate-500 text-xs mt-0.5">Food &amp; Drinks • 10:45 AM</p></div></div><div class="text-right"><p class="text-slate-900 font-extrabold text-sm">-₹450.00</p><p class="text-green-600 text-[10px] font-bold uppercase mt-0.5">Completed</p></div></div><div class="flex items-center justify-between p-5 hover:bg-slate-50 transition-all cursor-pointer group"><div class="flex items-center gap-4">
+    <!-- <div class="size-12 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center"><span class="material-symbols-outlined">directions_car</span></div> -->
+    <div><p class="text-slate-900 font-bold text-sm">Uber Ride</p><p class="text-slate-500 text-xs mt-0.5">Transport • 08:30 AM</p></div></div><div class="text-right"><p class="text-slate-900 font-extrabold text-sm">-₹820.50</p><p class="text-green-600 text-[10px] font-bold uppercase mt-0.5">Completed</p></div></div><div class="flex items-center justify-between p-5 hover:bg-slate-50 transition-all cursor-pointer group"><div class="flex items-center gap-4">
+        <!-- <div class="size-12 rounded-xl bg-purple-50 text-primary-purple flex items-center justify-center"><span class="material-symbols-outlined">shopping_bag</span></div> -->
+        <div><p class="text-slate-900 font-bold text-sm">Apple Store</p><p class="text-slate-500 text-xs mt-0.5">Electronics • Yesterday</p></div></div><div class="text-right"><p class="text-slate-900 font-extrabold text-sm">-₹12,400.00</p><p class="text-orange-500 text-[10px] font-bold uppercase mt-0.5">Pending</p></div></div></div></div>
+<!-- Quick Analysis -->
+<div class="space-y-4"><h4 class="text-slate-900 text-lg font-bold px-1">Category Distribution</h4><div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm space-y-6"><div class="space-y-5"><div class="space-y-2.5"><div class="flex justify-between text-[11px] font-bold uppercase tracking-wider text-slate-400"><span>Food &amp; Dining</span><span class="text-slate-700">45%</span></div><div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden"><div class="h-full w-[45%] bg-primary-purple rounded-full"></div></div></div><div class="space-y-2.5"><div class="flex justify-between text-[11px] font-bold uppercase tracking-wider text-slate-400"><span>Shopping</span><span class="text-slate-700">30%</span></div><div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden"><div class="bg-purple-400 h-full w-[30%] rounded-full"></div></div></div><div class="space-y-2.5"><div class="flex justify-between text-[11px] font-bold uppercase tracking-wider text-slate-400"><span>Travel</span><span class="text-slate-700">15%</span></div><div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden"><div class="bg-blue-400 h-full w-[15%] rounded-full"></div></div></div><div class="space-y-2.5"><div class="flex justify-between text-[11px] font-bold uppercase tracking-wider text-slate-400"><span>Others</span><span class="text-slate-700">10%</span></div><div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden"><div class="bg-slate-300 h-full w-[10%] rounded-full"></div></div></div></div><div class="p-4 rounded-xl bg-purple-50/50 border border-purple-100 flex gap-3"><span class="material-symbols-outlined text-primary-purple shrink-0">lightbulb</span><p class="text-xs text-slate-600 leading-relaxed">You spent <span class="text-primary-purple font-bold">12% more</span> on food this week than your average. Consider reducing dining out.</p></div></div></div>
+</div>
+<!-- Footer Summary Stats -->
+<div class="grid grid-cols-1 gap-4 pb-10"><div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm"> <p class="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-1">Income</p> <p class="text-slate-900 text-xl font-extrabold">₹42,000</p> </div> <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm"> <p class="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-1">Expenses</p> <p class="text-xl font-extrabold text-primary-purple">₹28,640</p> </div> <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm"> <p class="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-1">Savings</p> <p class="text-dark-purple text-xl font-extrabold">₹13,360</p> </div> <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm"> <p class="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-1">Tax Estimates</p> <p class="text-slate-900 text-xl font-extrabold">₹2,100</p> </div></div>
+</div>
+</main>
+</div>
+</body></html>
