@@ -9,37 +9,38 @@
 
 <body>
 
-  <!-- HEADER -->
   <header class="header">
     <div class="logo">
       <img src="{{ url_for('static', filename='img/wallet.svg') }}" alt="">
       <span>WMS</span>
     </div>
-    <a href="{{ url_for('login') }}" class="launch-btn">HOME</a>
+    <a href="{{ url_for('index') }}" class="launch-btn">HOME</a>
   </header>
 
-  <!-- MAIN -->
   <main class="features-section">
     <h1 class="features-title">Welcome back</h1>
 
     <div class="auth-card">
 
-     
-        <!-- ✅ SAFE FLASH MESSAGE BLOCK -->
-      {% with messages = get_flashed_messages() %}
+      {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-          {% for message in messages %}
+          {% for category, message in messages %}
+            {% set text_color = '#28a745' if category == 'success' else '#dc3545' %}
+            {% set bg_color = '#e6ffe6' if category == 'success' else '#ffe6e6' %}
             <p style="text-align:center;
                       margin-bottom:15px;
                       font-weight:bold;
-                      color:red;">
+                      color: {{ text_color }};
+                      background-color: {{ bg_color }};
+                      border: 1px solid {{ text_color }};
+                      padding: 10px;
+                      border-radius: 8px;">
               {{ message }}
             </p>
           {% endfor %}
         {% endif %}
       {% endwith %}
 
-      <!-- FIXED FORM -->
       <form action="{{ url_for('login') }}" method="POST">
 
         <div class="auth-field">
@@ -54,15 +55,17 @@
 
         <div style="display:flex;gap:12px;align-items:center;justify-content:center;margin-top:12px;">
           <button type="submit" class="primary auth-btn">Login</button>
-
-          <a href="{{ url_for('signup') }}"
-             class="secondary"
-             style="padding:10px 20px;border-radius:8px;text-decoration:none;">
-            Create Account
-          </a>
         </div>
 
       </form>
+
+      <div style="display:flex;gap:12px;align-items:center;justify-content:center;margin-top:12px;">
+        <a href="{{ url_for('signup') }}"
+           class="secondary"
+           style="padding:10px 20px;border-radius:8px;text-decoration:none;">
+          Create Account
+        </a>
+      </div>
 
     </div>
   </main>

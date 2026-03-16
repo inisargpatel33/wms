@@ -8,26 +8,38 @@
 </head>
 <body>
 
-  <!-- HEADER -->
   <header class="header">
     <div class="logo">
       <img src="{{ url_for('static', filename='img/wallet.svg') }}" alt="Wallet">
       <span>WMS</span>
     </div>
-
-    <!-- Change this to your actual home route name if different -->
-    <a href="/" class="launch-btn">HOME</a>
+    <a href="{{ url_for('index') }}" class="launch-btn">HOME</a>
   </header>
 
-  <!-- MAIN SECTION -->
   <main class="features-section">
     <h1 class="features-title">Create your account</h1>
 
     <div class="auth-card">
 
-      
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            {% set text_color = '#28a745' if category == 'success' else '#dc3545' %}
+            {% set bg_color = '#e6ffe6' if category == 'success' else '#ffe6e6' %}
+            <p style="text-align:center;
+                      margin-bottom:15px;
+                      font-weight:bold;
+                      color: {{ text_color }};
+                      background-color: {{ bg_color }};
+                      border: 1px solid {{ text_color }};
+                      padding: 10px;
+                      border-radius: 8px;">
+              {{ message }}
+            </p>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
 
-      <!-- SIGNUP FORM -->
       <form method="POST" action="{{ url_for('register') }}">
 
         <div class="auth-field">
@@ -49,33 +61,17 @@
           <label>Confirm Password</label>
           <input type="password" name="confirm" required>
         </div>
-        
-        <!-- ✅ SAFE FLASH MESSAGE BLOCK -->
-      {% with messages = get_flashed_messages() %}
-        {% if messages %}
-          {% for message in messages %}
-            <p style="text-align:center;
-                      margin-bottom:15px;
-                      font-weight:bold;
-                      color:red;">
-              {{ message }}
-            </p>
-          {% endfor %}
-        {% endif %}
-      {% endwith %}
-        <div style="display:flex; gap:12px; align-items:center; justify-content:center; margin-top:15px;">
 
+        <div style="display:flex; gap:12px; align-items:center; justify-content:center; margin-top:15px;">
           <button type="submit" class="primary auth-btn">
             Sign Up
           </button>
 
-          <!-- Direct URL to avoid endpoint error -->
-          <a href="/login"
+          <a href="{{ url_for('login') }}"
              class="secondary"
              style="padding:10px 20px; border-radius:8px; text-decoration:none; display:inline-flex; align-items:center;">
             Sign In
           </a>
-
         </div>
 
       </form>
