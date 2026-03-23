@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html class="" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Wallets & Goals - WalletX</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+        darkMode: "class",
+        theme: {
+            extend: {
+                colors: {
+                    "primary": "#a855f7",
+                    "primary-purple": "#a855f7",
+                    "accent-orange": "#c084fc",
+                    "background-light": "#f8f9ff",
+                    "background-dark": "#1a0b2e",
+                    "card-dark": "#ffffff",
+                    "border-dark": "#e2e8f0",
+                    "text-muted": "#64748b",
+                    "dark-purple": "#4c1d95"
+                },
+                fontFamily: {
+                    "display": ["Inter", "sans-serif"]
+                },
+                borderRadius: {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+                },
+            },
+        },
+    }
+</script>
+<style>
+    body { font-family: 'Inter', sans-serif; }
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    .active-nav { background-color: #362254; }
+</style>
+</head>
+<body class="bg-slate-50 text-slate-900 font-display min-h-screen">
+<div class="flex h-screen overflow-hidden">
+
+<aside class="w-64 border-r border-slate-200 bg-slate-50 flex flex-col shrink-0 hidden lg:flex">
+    <div class="p-6 flex flex-col gap-8 h-full">
+        <div class="flex gap-3 items-center">
+            <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-primary" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBHjDuBb92SmyXHldi5O3qv67qvkTcwOP69_GJIFLDxjM3CrNJHerVPqBl9nNNbU6xLWI2pW2r5luiLjvmFf0LWe49GpIj8rrkjKGq8aI_aenUIvKrQ4VuhihwoTcDRKVbBvrBUmwsJ8wzVbO4nzdipxCEENFBTJ53nrMT-2wB-jM4hzvKP1L5dxrqz3_jmqzX3ZjbHgv5DmlX7MIx3aChkimZuCX2sS-MqmjHjRLF1q65qdXD6bg0ZMpgGM6K1O92EkKusAVZVxA");'></div>
+            <div class="flex flex-col">
+                <h1 class="text-dark-purple text-base font-semibold leading-none">{{ user.fullname }}</h1>
+            </div>
+        </div>
+        
+        <nav class="flex flex-col gap-1">
+            <a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-200/50 hover:text-dark-purple transition-colors" href="/dashboard">
+                <span class="material-symbols-outlined">home</span>
+                <span class="text-sm font-medium">Home</span>
+            </a>
+            <a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-200/50 hover:text-dark-purple transition-colors" href="#">
+                <span class="material-symbols-outlined">pie_chart</span>
+                <span class="text-sm font-medium">Analysis</span>
+            </a>
+            <a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary-purple text-white shadow-sm transition-all" href="/wallets">
+                <span class="material-symbols-outlined">account_balance_wallet</span>
+                <span class="text-sm font-semibold">Wallets</span>
+            </a>
+            <a href="/profile" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-purple-50 hover:text-dark-purple transition-colors">
+                <span class="material-symbols-outlined">person</span>
+                <span class="text-sm font-medium">Profile</span>
+            </a>
+            <a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-200/50 hover:text-dark-purple transition-colors" href="#">
+                <span class="material-symbols-outlined">settings</span>
+                <span class="text-sm font-medium">Settings</span>
+            </a>
+        </nav>
+        
+        <div class="mt-auto">
+            <div class="p-4 rounded-xl bg-white border border-primary-purple/20 shadow-sm">
+                <p class="text-xs text-primary-purple font-extrabold uppercase tracking-wider">Storage</p>
+                <p class="text-sm text-slate-600 mt-2">75% of limit used</p>
+                <div class="w-full bg-border-dark h-1.5 rounded-full mt-2 overflow-hidden">
+                    <div class="h-full w-3/4 bg-primary-purple"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</aside>
+
+<main class="flex-1 flex flex-col overflow-y-auto pb-20 lg:pb-0">
+    
+    <header class="flex items-center justify-between border-b border-slate-200 py-4 sticky top-0 bg-white/80 backdrop-blur-md z-10 px-4 lg:px-8">
+        <div class="flex items-center gap-6 flex-1 gap-2 lg:gap-6">
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-3xl">account_balance</span>
+                <h2 class="text-dark-purple text-xl font-bold tracking-tight">My Wallets & Goals</h2>
+            </div>
+        </div>
+        <div class="flex items-center gap-4">
+            <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDSEW3IHfjKzvoKwVGWgHhXOm5dxLKfLCUmnHdvbUg3HPxlwte-y9RVt2nmePU3y9ZoxI3LaACG3iTY3eSX-h_ZWhF8gnMA0kjvDY423vDjux-wY2Oy5ODwJuf-LNYjOs_OwceHQWDZ3YIUd974eEm5jnqJMLaHC-6K2bZ-vXq7wC-YoCI94YcDrhmwFdCqEy5H1OgodCUReAkjLxQvMhgbgMIvpUuyYCJ0TEGWmv5PO3Qdq9-ooI4udpHqAwTwnX52JVi_Lfxqlg");'></div>
+        </div>
+    </header>
+
+    <div id="toast-container" class="fixed top-6 left-1/2 transform -translate-x-1/2 z-[300] flex flex-col gap-3 w-full max-w-md px-4 pointer-events-none">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-toast flex items-center justify-between gap-3 px-5 py-4 rounded-2xl shadow-2xl backdrop-blur-md transform transition-all duration-500 translate-y-[-20px] opacity-0 pointer-events-auto
+                        {% if category == 'success' %} bg-green-500/95 border border-green-400 text-white shadow-green-500/30
+                        {% else %} bg-red-500/95 border border-red-400 text-white shadow-red-500/30 {% endif %}">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined font-black text-xl">
+                                {% if category == 'success' %}check_circle{% else %}error{% endif %}
+                            </span>
+                            <p class="font-bold text-sm tracking-wide">{{ message }}</p>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <div class="p-4 md:p-8 max-w-7xl mx-auto space-y-8 md:space-y-10 w-full">
+        
+        <section id="roundUpPromoSection">
+            <div class="bg-gradient-to-br from-dark-purple to-purple-900 rounded-2xl p-5 md:p-6 shadow-xl shadow-purple-200 relative overflow-hidden group">
+                <div class="absolute -right-6 -top-6 size-32 bg-white/10 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-500"></div>
+                <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div class="flex items-start md:items-center gap-4">
+                        <div class="size-12 md:size-14 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-white shrink-0 border border-white/10">
+                            <span class="material-symbols-outlined text-2xl md:text-3xl filled-icon animate-pulse">auto_awesome</span>
+                        </div>
+                        <div class="space-y-1">
+                            <h3 class="text-white font-extrabold text-lg md:text-xl tracking-tight">Round-Up Savings</h3>
+                            <p class="text-purple-200 text-xs md:text-sm max-w-md font-medium">Round up your transactions to the nearest ₹100 and save the difference automatically into your priority goals.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="roundUpToggle" onchange="enableRoundUp()" class="sr-only peer" value=""/>
+                            <div class="w-12 h-6 bg-purple-950/50 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500 border border-purple-500/30"></div>
+                            <span class="ms-3 text-sm font-bold text-white uppercase tracking-widest">Enable</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <div class="flex items-center justify-between mb-4 md:mb-6">
+                <h2 class="text-slate-900 text-lg md:text-xl font-bold tracking-tight">Sub-Wallets</h2>
+                <a href="/dashboard" class="text-primary-purple text-sm font-bold hover:underline cursor-pointer">Manage in Dashboard</a>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                <div class="bg-white p-5 md:p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow group flex flex-col justify-between">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="size-12 md:size-14 rounded-xl bg-purple-50 flex items-center justify-center text-primary-purple group-hover:scale-110 transition-transform shrink-0">
+                            <span class="material-symbols-outlined text-2xl md:text-3xl">account_balance_wallet</span>
+                        </div>
+                        <div>
+                            <h3 class="text-slate-500 text-xs md:text-sm font-bold uppercase tracking-wider mb-0.5">Main Wallet</h3>
+                            <p class="text-2xl md:text-3xl font-black text-dark-purple leading-none">₹{{ "{:,.2f}".format(wallet.balance) if wallet else "0.00" }}</p>
+                        </div>
+                    </div>
+                    <p class="text-slate-400 text-xs font-medium">Unallocated funds</p>
+                </div>
+                
+                {% if sub_wallets %}
+                    {% for sw in sub_wallets %}
+                    <div class="bg-white p-5 md:p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow group flex flex-col justify-between">
+                        <div class="flex items-center gap-4 mb-4">
+                            <div class="size-12 md:size-14 rounded-xl bg-blue-50 flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform shrink-0">
+                                <span class="material-symbols-outlined text-2xl md:text-3xl">folder</span>
+                            </div>
+                            <div>
+                                <h3 class="text-slate-500 text-xs md:text-sm font-bold uppercase tracking-wider mb-0.5">{{ sw.name }}</h3>
+                                <p class="text-2xl md:text-3xl font-black text-slate-900 leading-none">₹{{ "{:,.2f}".format(sw.balance) }}</p>
+                            </div>
+                        </div>
+                        <p class="text-slate-400 text-xs font-medium">Custom Envelope</p>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </section>
+
+        <section class="mb-10">
+            <div class="flex items-center justify-between mb-1">
+                <h2 class="text-slate-900 text-lg md:text-xl font-bold tracking-tight">Savings Goals</h2>
+                <button onclick="document.getElementById('createGoalModal').classList.remove('hidden')" class="flex items-center gap-1.5 px-4 py-2 bg-primary-purple/10 text-primary-purple border border-primary-purple/20 rounded-xl text-xs md:text-sm font-bold hover:bg-primary-purple hover:text-white transition-colors cursor-pointer shadow-sm">
+                    <span class="material-symbols-outlined text-base">add</span>
+                    <span>New Goal</span>
+                </button>
+            </div>
+            
+            <p id="roundUpActiveText" class="hidden text-xs md:text-sm text-green-600 font-bold mb-4 md:mb-6 flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-sm">auto_awesome</span>
+                Round-up savings is active. Spare change is automatically funding your Priority Goal!
+            </p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mt-4">
+                {% if goals %}
+                    {% for goal in goals %}
+                    <div class="bg-white p-5 md:p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col relative overflow-hidden group">
+                        
+                        {% if goal.is_priority %}
+                        <div class="absolute -right-8 top-4 bg-primary-purple text-white text-[10px] font-black uppercase tracking-widest py-1 px-10 transform rotate-45 shadow-sm">Priority 1</div>
+                        {% endif %}
+                        
+                        <div class="absolute top-4 right-4 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+                            {% if not goal.is_priority %}
+                            <form action="{{ url_for('make_priority', goal_id=goal.id) }}" method="POST" class="m-0">
+                                <button type="submit" class="bg-slate-100 hover:bg-yellow-100 text-slate-400 hover:text-yellow-500 p-1.5 rounded-lg transition-colors" title="Set as Priority 1">
+                                    <span class="material-symbols-outlined text-sm">star</span>
+                                </button>
+                            </form>
+                            {% endif %}
+                            
+                            <form action="{{ url_for('delete_goal', goal_id=goal.id) }}" method="POST" class="m-0" onsubmit="return confirm('Are you sure you want to delete this goal? Any saved money will be refunded to your Main Wallet.');">
+                                <button type="submit" class="bg-slate-100 hover:bg-red-100 text-slate-400 hover:text-red-500 p-1.5 rounded-lg transition-colors" title="Delete Goal">
+                                    <span class="material-symbols-outlined text-sm">delete</span>
+                                </button>
+                            </form>
+                        </div>
+
+                        <div class="flex justify-between items-center mb-5">
+                            <div class="flex items-center gap-3">
+                                <div class="size-10 md:size-12 rounded-lg bg-slate-50 flex items-center justify-center text-slate-600 shrink-0">
+                                    <span class="material-symbols-outlined">{{ goal.icon }}</span>
+                                </div>
+                                <h3 class="font-bold text-base md:text-lg text-slate-900 leading-tight pr-6">{{ goal.name }}</h3>
+                            </div>
+                            <span class="text-primary-purple text-[10px] md:text-xs font-bold px-2 py-1 bg-purple-50 rounded-full shrink-0 mt-1 sm:mt-0">{{ goal.percent }}% Done</span>
+                        </div>
+                        
+                        <div class="mt-auto">
+                            <p class="text-slate-500 text-xs md:text-sm font-bold mb-2">₹{{ "{:,.0f}".format(goal.current_balance) }} <span class="text-slate-400 font-medium">/ ₹{{ "{:,.0f}".format(goal.target_amount) }}</span></p>
+                            <div class="w-full h-2 md:h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                                <div class="h-full bg-primary-purple rounded-full transition-all duration-1000" style="width: {{ goal.percent }}%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="col-span-full py-10 flex flex-col items-center justify-center text-center bg-white rounded-2xl border border-slate-100 border-dashed">
+                        <div class="size-16 rounded-full bg-purple-50 flex items-center justify-center mb-4">
+                            <span class="material-symbols-outlined text-3xl text-primary-purple">track_changes</span>
+                        </div>
+                        <h5 class="text-slate-800 font-black text-lg mb-2">No Goals Set</h5>
+                        <p class="text-slate-500 text-sm max-w-xs mx-auto mb-4">Create your first savings goal to start tracking your progress.</p>
+                        <button onclick="document.getElementById('createGoalModal').classList.remove('hidden')" class="text-primary-purple text-sm font-bold hover:underline cursor-pointer">Set a Goal Now</button>
+                    </div>
+                {% endif %}
+            </div>
+        </section>
+    </div>
+</main>
+</div>
+
+<nav class="lg:hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-slate-200 flex items-center justify-between px-4 sm:px-6 py-3 z-[100] shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.05)]">
+    <a href="/dashboard" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
+        <span class="material-symbols-outlined text-2xl">home</span>
+        <span class="text-[10px] font-bold">Home</span>
+    </a>
+    <a href="#" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
+        <span class="material-symbols-outlined text-2xl">pie_chart</span>
+        <span class="text-[10px] font-bold">Analysis</span>
+    </a>
+    <a href="/wallets" class="flex flex-col items-center gap-1 text-primary-purple">
+        <span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">account_balance_wallet</span>
+        <span class="text-[10px] font-black tracking-wider">Wallets</span>
+    </a>
+    <a href="/profile" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
+        <span class="material-symbols-outlined text-2xl">person</span>
+        <span class="text-[10px] font-bold">Profile</span>
+    </a>
+    <a href="#" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
+        <span class="material-symbols-outlined text-2xl">settings</span>
+        <span class="text-[10px] font-bold">Settings</span>
+    </a>
+</nav>
+
+<div id="createGoalModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
+  <div class="bg-white rounded-[2rem] p-8 w-full max-w-md shadow-2xl border border-slate-100">
+    <div class="flex justify-between items-center mb-6">
+      <div class="flex items-center gap-3">
+        <span class="material-symbols-outlined text-primary-purple bg-purple-50 p-2 rounded-xl">flag</span>
+        <h3 class="font-bold text-xl text-slate-900">New Savings Goal</h3>
+      </div>
+      <button type="button" onclick="document.getElementById('createGoalModal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 bg-slate-50 p-2 rounded-full cursor-pointer">
+        <span class="material-symbols-outlined text-sm">close</span>
+      </button>
+    </div>
+    
+    <form action="{{ url_for('create_goal') }}" method="POST">
+      <div class="space-y-5">
+        <div>
+          <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">What are you saving for?</label>
+          <input type="text" name="goal_name" placeholder="e.g. Goa Trip, New Laptop" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 focus:ring-2 focus:ring-primary-purple focus:outline-none">
+        </div>
+        
+        <div>
+          <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Target Amount</label>
+          <div class="relative">
+            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">₹</span>
+            <input type="number" name="target_amount" min="100" step="1" placeholder="50000" required class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-8 pr-4 py-3 text-sm text-slate-900 focus:ring-2 focus:ring-primary-purple focus:outline-none">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Choose an Icon</label>
+          <select name="goal_icon" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 focus:ring-2 focus:ring-primary-purple focus:outline-none cursor-pointer">
+            <option value="stars">Default (Stars)</option>
+            <option value="flight_takeoff">Travel / Vacation</option>
+            <option value="laptop_mac">Electronics</option>
+            <option value="directions_car">Vehicle</option>
+            <option value="home">Real Estate / Home</option>
+            <option value="school">Education</option>
+          </select>
+        </div>
+
+        <button type="submit" class="w-full bg-primary-purple text-white font-bold py-3.5 rounded-xl hover:bg-dark-purple transition-all shadow-md shadow-purple-200 cursor-pointer mt-4">
+          Save Goal
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  // Script to handle Toast messages
+  document.addEventListener("DOMContentLoaded", function() {
+      const toasts = document.querySelectorAll('.flash-toast');
+      toasts.forEach((toast, index) => {
+          setTimeout(() => {
+              toast.classList.remove('translate-y-[-20px]', 'opacity-0');
+              toast.classList.add('translate-y-0', 'opacity-100');
+          }, 100 + (index * 150));
+          setTimeout(() => {
+              toast.classList.remove('translate-y-0', 'opacity-100');
+              toast.classList.add('translate-y-[-20px]', 'opacity-0');
+              setTimeout(() => toast.remove(), 500); 
+          }, 3000); 
+      });
+
+      // Check if Round-Up was enabled previously
+      if (localStorage.getItem('roundUpEnabled') === 'true') {
+          document.getElementById('roundUpPromoSection').style.display = 'none';
+          document.getElementById('roundUpActiveText').classList.remove('hidden');
+      }
+  });
+
+  // Script to handle Round-Up Toggle functionality
+  function enableRoundUp() {
+      const toggle = document.getElementById('roundUpToggle');
+      if (toggle.checked) {
+          // Add a slight delay so they see the toggle move before it disappears
+          setTimeout(() => {
+              document.getElementById('roundUpPromoSection').style.display = 'none';
+              document.getElementById('roundUpActiveText').classList.remove('hidden');
+              // Save choice to browser memory so it stays hidden on refresh
+              localStorage.setItem('roundUpEnabled', 'true');
+          }, 400);
+      }
+  }
+</script>
+
+</body>
+</html>

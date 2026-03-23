@@ -2,8 +2,11 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from werkzeug.security import check_password_hash, generate_password_hash
 import mysql.connector
 import random
+import math
+from datetime import datetime
 
 import razorpay
+import os
 
 
 # test key
@@ -12,11 +15,26 @@ RAZORPAY_KEY_SECRET = "dobJbw8U5fBTv5D6kRwWHk6E"
 client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
 
 
-app = Flask(
-    __name__,
-    template_folder="../Frontend/landing",
-    static_folder="../Frontend"
-)
+
+# Get the base directory (where main.py is)
+base_dir = os.path.dirname(os.path.abspath(__file__))
+
+
+
+# Get the base directory of your project
+base_dir = os.path.dirname(os.path.abspath(__file__))
+# Change static_folder to point to the main Frontend folder
+# Get the base directory of your project
+
+
+app = Flask(__name__, 
+            template_folder=os.path.join(base_dir, '../Frontend/landing'), # Looks here for HTML
+            static_folder=os.path.join(base_dir, '../Frontend')            # Looks here for img, css, js
+)# app = Flask(
+#     __name__,
+#     template_folder="../Frontend/landing",
+#     static_folder="../Frontend"
+# )
 app.secret_key = "supersecretkey"
 
 # --- DATABASE CONFIGURATION ---
@@ -42,9 +60,19 @@ def generate_wallet_id(cursor):
 
 # --- ROUTES ---
 
+# ==========================================
+# LANDING PAGE (SWM Homepage)
+# ==========================================
 @app.route('/')
 def index():
-    return redirect(url_for('login'))
+    if 'user_id' in session:
+        return redirect(url_for('dashboard'))
+    # Tell Flask to look inside the 'landing' sub-folder
+    return render_template('index.html')
+
+# @app.route('/')
+# def index():
+#     return redirect(url_for('login'))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -77,7 +105,7 @@ def login():
 def signup():
     # Allow POST here to avoid 405 if a form accidentally posts to /signup.
     # The signup page is always simply rendered.
-    return render_template("signup.html")
+    return render_template("/signup.html")
 
 @app.route('/register', methods=['POST'])
 def register():
@@ -126,139 +154,156 @@ def register():
         cursor.close()
         conn.close()
         
-        
-        
+  # ==========================================
+# DASHBOARD PAGE
+# ==========================================
 @app.route('/dashboard')
 def dashboard():
     if 'user_id' not in session:
-        flash("Please log in to access the dashboard.", "error")
         return redirect(url_for('login'))
-    
+        
     conn, cursor = get_db_connection()
-
     try:
+        # 1. Get User
         cursor.execute("SELECT * FROM user WHERE id=%s", (session['user_id'],))
         user_data = cursor.fetchone()
 
+        # 2. Get Main Wallet
         cursor.execute("SELECT * FROM wallet WHERE user_id=%s", (session['user_id'],))
         wallet_data = cursor.fetchone()
 
-        cursor.execute(
-            "SELECT * FROM sub_wallet WHERE user_id=%s ORDER BY created_at DESC",
-            (session['user_id'],)
-        )
+        # 3. Get Sub Wallets
+        cursor.execute("SELECT * FROM sub_wallet WHERE user_id=%s", (session['user_id'],))
         sub_wallets_data = cursor.fetchall()
 
-        # ---- wealth calculation ----
-        main_balance = float(wallet_data['balance'])
-        sub_total = sum(float(sw['balance']) for sw in sub_wallets_data)
-        total_wealth = main_balance + sub_total
-
+        # Calculate Total Balance
+        total_balance = float(wallet_data['balance']) if wallet_data else 0.0
         for sw in sub_wallets_data:
-            sw['percent'] = round((float(sw['balance']) / total_wealth) * 100) if total_wealth > 0 else 0
+            total_balance += float(sw['balance'])
 
-        main_percent = round((main_balance / total_wealth) * 100) if total_wealth > 0 else 100
+        # Calculate Total Spent
+        cursor.execute("SELECT SUM(amount) as total FROM transactions WHERE user_id=%s AND transaction_type='Payment'", (session['user_id'],))
+        spent_result = cursor.fetchone()
+        total_spent = float(spent_result['total'] or 0)
 
-        # ---- recent transactions ----
+        # 4. Get Recent Transactions
+        cursor.execute("SELECT * FROM transactions WHERE user_id=%s ORDER BY timestamp DESC LIMIT 5", (session['user_id'],))
+        recent_transactions = cursor.fetchall()
         
-        # Fetch optimized transaction history
-      # 1. Fetch ALL transactions (No weird SQL formatting)
+        cursor.execute("SELECT * FROM transactions WHERE user_id=%s ORDER BY timestamp DESC", (session['user_id'],))
+        all_transactions = cursor.fetchall()
+
+        # ==========================================
+        # 🚀 DASHBOARD QUICK INSIGHTS
+        # ==========================================
+        insights = {
+            "largest_purchase": None,
+            "transaction_count": 0,
+            "most_frequent_wallet": None
+        }
+
         cursor.execute("""
-            SELECT amount, wallet_name, transaction_type, timestamp
+            SELECT amount, wallet_name, timestamp 
             FROM transactions 
-            WHERE user_id = %s 
-            ORDER BY timestamp DESC
+            WHERE user_id=%s AND transaction_type='Payment' 
+            ORDER BY amount DESC LIMIT 1
         """, (session['user_id'],))
+        largest_txn = cursor.fetchone()
         
-        all_tx = cursor.fetchall()
+        if largest_txn:
+            insights["largest_purchase"] = {
+                "amount": float(largest_txn['amount']),
+                "wallet": largest_txn['wallet_name']
+            }
 
-        # 2. Safely format the time using Python
-        for tx in all_tx:
-            # Check if it's a valid timestamp object
-            if hasattr(tx['timestamp'], 'strftime'):
-                tx['time_only'] = tx['timestamp'].strftime('%I:%M %p')  # e.g., 10:45 AM
-                tx['date_only'] = tx['timestamp'].strftime('%b %d, %Y') # e.g., Mar 16, 2026
-            else:
-                tx['time_only'] = ""
-                tx['date_only'] = ""
+        cursor.execute("""
+            SELECT COUNT(*) as total_count, wallet_name 
+            FROM transactions 
+            WHERE user_id=%s AND transaction_type='Payment' AND wallet_name != 'Main Wallet'
+            GROUP BY wallet_name 
+            ORDER BY total_count DESC LIMIT 1
+        """, (session['user_id'],))
+        frequent_wallet = cursor.fetchone()
 
-        # 3. Split the data: Top 5 for the dashboard, everything else for "View All"
-        recent_transactions = all_tx[:5]
-        
-        # --- CALCULATIONS FOR FOOTER STATS ---
-        # 1. Total Income (Sum of all Deposits)
-        cursor.execute("SELECT SUM(amount) as total_income FROM transactions WHERE user_id=%s AND transaction_type='Deposit'", (session['user_id'],))
-        inc_row = cursor.fetchone()
-        income = float(inc_row['total_income']) if inc_row and inc_row['total_income'] else 0.0
+        if frequent_wallet:
+            insights["transaction_count"] = frequent_wallet['total_count']
+            insights["most_frequent_wallet"] = frequent_wallet['wallet_name']
 
-        # 2. Total Expenses (Sum of all Payments)
-        cursor.execute("SELECT SUM(amount) as total_expense FROM transactions WHERE user_id=%s AND transaction_type='Payment'", (session['user_id'],))
-        exp_row = cursor.fetchone()
-        expense = float(exp_row['total_expense']) if exp_row and exp_row['total_expense'] else 0.0
+        # ==========================================
+        # 🚀 HEALTH WARNINGS (BURN RATE)
+        # ==========================================
+        health_warnings = []
+        
+        cursor.execute("SELECT name, balance FROM sub_wallet WHERE user_id=%s", (session['user_id'],))
+        current_balances = {row['name']: float(row['balance']) for row in cursor.fetchall()}
 
-        # 3. Total Transactions Count (Replacing Tax)
-        cursor.execute("SELECT COUNT(*) as tx_count FROM transactions WHERE user_id=%s", (session['user_id'],))
-        tx_row = cursor.fetchone()
-        tx_count = int(tx_row['tx_count']) if tx_row and tx_row['tx_count'] else 0
-        
-        
-        # --- DYNAMIC MONTHLY BUDGET LOGIC ---
-        # 1. Set your monthly limit here (e.g., ₹10,000 for the portfolio)
-        # Check if the user set a custom budget, otherwise default to 10000
-        MONTHLY_LIMIT = float(session.get('monthly_budget', 10000.0))
-        
-        # 2. Use the total expense we calculated earlier
-        current_month_expense = expense 
-        
-        # 3. Calculate percentages
-        if MONTHLY_LIMIT > 0:
-            budget_percent = int((current_month_expense / MONTHLY_LIMIT) * 100)
-        else:
-            budget_percent = 0
+        cursor.execute("""
+            SELECT wallet_name, SUM(amount) as total_spent, MIN(timestamp) as first_date
+            FROM transactions
+            WHERE user_id=%s AND transaction_type='Payment' AND wallet_name != 'Main Wallet' AND wallet_name NOT LIKE 'Goal:%%'
+            GROUP BY wallet_name
+        """, (session['user_id'],))
+        envelope_data = cursor.fetchall()
+
+        for env in envelope_data:
+            name = env['wallet_name']
+            spent = float(env['total_spent'] or 0)
             
-        # Cap the circle at 100% so it doesn't break the UI if they overspend
-        ui_percent = budget_percent if budget_percent <= 100 else 100
+            days_active = 1 
+            first_date = env['first_date']
             
-        budget_remaining = MONTHLY_LIMIT - current_month_expense
-        if budget_remaining < 0:
-            budget_remaining = 0
+            if first_date:
+                if isinstance(first_date, str):
+                    try:
+                        # Removed the problematic import from here!
+                        first_date = datetime.strptime(str(first_date).split('.')[0], '%Y-%m-%d %H:%M:%S')
+                    except Exception:
+                        pass
+                
+                if isinstance(first_date, datetime):
+                    delta = (datetime.now() - first_date).days
+                    if delta > 0:
+                        days_active = delta
             
-        # 4. SVG Circle Math (Total circumference of your circle is 471)
-        circle_offset = 471 - (471 * (ui_percent / 100))
-        # ------------------------------------
+            daily_burn = spent / days_active
+            
+            if name in current_balances:
+                bal = current_balances[name]
+                if daily_burn > 0 and bal > 0:
+                    days_left = int(bal / daily_burn)
+                    if days_left <= 14:
+                        health_warnings.append({
+                            "name": name,
+                            "burn_rate": daily_burn,
+                            "days_left": days_left,
+                            "balance": bal
+                        })
+                elif bal <= 0 and spent > 0:
+                    health_warnings.append({
+                        "name": name,
+                        "burn_rate": daily_burn,
+                        "days_left": 0,
+                        "balance": 0
+                    })
 
-
-                              
-        
-        
-        return render_template("dash2.html", 
-                               user=user_data, 
-                               wallet=wallet_data, 
-                               sub_wallets=sub_wallets_data, 
-                               main_percent=main_percent,
-                               total_wealth=total_wealth,
-                               transactions=recent_transactions,  # Only 5 items
-                               all_transactions=all_tx,  # Every single item!
-                               income=income,          # NEW
-                               expense=expense,        # NEW
-                               tx_count=tx_count,
-                                monthly_limit=MONTHLY_LIMIT,             # NEW
-                               current_month_expense=current_month_expense, # NEW
-                               budget_percent=budget_percent,           # NEW
-                               budget_remaining=budget_remaining,       # NEW
-                               circle_offset=circle_offset)             # NEW
-        
-
-    except mysql.connector.Error as err:
-        print("Database Error:", err)
-        flash("Error loading dashboard data.", "error")
-        return redirect(url_for('login'))
-
+    except Exception as e:
+        print("Dashboard Error:", e)
+        user_data, wallet_data, sub_wallets_data, total_balance, total_spent, recent_transactions, insights, health_warnings = {}, {}, [], 0, 0, [], {}, []
     finally:
-        cursor.close()
-        conn.close()
-        
-        
+        if 'cursor' in locals():
+            cursor.close()
+            conn.close()
+
+    return render_template("dash2.html", 
+                           user=user_data, 
+                           wallet=wallet_data, 
+                           sub_wallets=sub_wallets_data,
+                           total_balance=total_balance,
+                           total_spent=total_spent,
+                           transactions=recent_transactions,
+                           insights=insights,
+                           all_transactions=all_transactions,
+                           health_warnings=health_warnings)      
         
               
         
@@ -446,70 +491,92 @@ def create_order():
 # ==========================================
 # PART 2: VERIFY & DEDUCT (Your exact DB logic!)
 # ==========================================
+# ==========================================
+# PROCESS PAYMENT & ROUND-UP SAVINGS
+# ==========================================
+# ==========================================
+# PROCESS PAYMENT & ROUND-UP SAVINGS
+# ==========================================
 @app.route('/verify_payment', methods=['POST'])
 def verify_payment():
     if 'user_id' not in session:
         return redirect(url_for('login'))
 
-    # Get Razorpay data sent by the frontend
-    payment_id = request.form.get('razorpay_payment_id')
-    order_id = request.form.get('razorpay_order_id')
-    signature = request.form.get('razorpay_signature')
-    
-    # Get the original amount and wallet choice
-    amount = float(request.form.get('amount', 0))
-    wallet_source = request.form.get('wallet_source')
+    amount_spent = float(request.form.get('amount', 0))
+    wallet_source = request.form.get('wallet_source', 'main')
 
+    conn, cursor = get_db_connection()
     try:
-        # 1. VERIFY RAZORPAY SIGNATURE (Security Check)
-        client.utility.verify_payment_signature({
-            'razorpay_order_id': order_id,
-            'razorpay_payment_id': payment_id,
-            'razorpay_signature': signature
-        })
-
-        # 2. IF SUCCESSFUL, RUN YOUR EXACT DATABASE MATH
-        source_name = ""
-        conn, cursor = get_db_connection()
-
+        # --- SCENARIO 1: PAYING FROM MAIN WALLET (Applies Round-Up) ---
         if wallet_source == 'main':
-            cursor.execute("SELECT balance FROM wallet WHERE user_id=%s", (session['user_id'],))
-            row = cursor.fetchone()
-            if not row or float(row['balance']) < amount:
-                flash("Insufficient funds in Main Wallet!", "error")
-                return redirect(url_for('dashboard'))
-            cursor.execute("UPDATE wallet SET balance = balance - %s WHERE user_id=%s", (amount, session['user_id']))
-            source_name = "Main Wallet"
+            # 1. Deduct the exact payment from Main Wallet
+            cursor.execute("UPDATE wallet SET balance = balance - %s WHERE user_id=%s", (amount_spent, session['user_id']))
+            
+            # 2. Log the normal payment expense (REMOVED 'description')
+            cursor.execute("""
+                INSERT INTO transactions (user_id, wallet_name, transaction_type, amount) 
+                VALUES (%s, %s, %s, %s)
+            """, (session['user_id'], 'Main Wallet', 'Payment', amount_spent))
 
+            # ==========================================
+            # 🚀 THE ROUND-UP MAGIC LOGIC
+            # ==========================================
+            # Calculate next hundred (e.g., spent 240 -> ceil(2.4) * 100 = 300)
+            next_hundred = math.ceil(amount_spent / 100.0) * 100
+            spare_change = next_hundred - amount_spent
+
+            if spare_change > 0:
+                # Find their Priority 1 Goal (or the first goal they created)
+                cursor.execute("SELECT id, name FROM savings_goals WHERE user_id=%s ORDER BY is_priority DESC, id ASC LIMIT 1", (session['user_id'],))
+                priority_goal = cursor.fetchone()
+
+                if priority_goal:
+                    # Deduct the spare change from Main Wallet
+                    cursor.execute("UPDATE wallet SET balance = balance - %s WHERE user_id=%s", (spare_change, session['user_id']))
+                    
+                    # Add it to the Priority Goal!
+                    cursor.execute("UPDATE savings_goals SET current_balance = current_balance + %s WHERE id=%s", (spare_change, priority_goal['id']))
+                    
+                    # Log the auto-transfer (REMOVED 'description')
+                    # Log the auto-transfer with the Goal's name!
+                    goal_label = f"Goal: {priority_goal['name']}"
+                    cursor.execute("""
+                        INSERT INTO transactions (user_id, wallet_name, transaction_type, amount) 
+                        VALUES (%s, %s, %s, %s)
+                    """, (session['user_id'], goal_label, 'Transfer', spare_change))                    
+                    flash(f"Payment successful! ₹{spare_change} automatically saved to '{priority_goal['name']}'.", "success")
+                else:
+                    flash("Payment successful!", "success")
+            else:
+                flash("Payment successful! (Exact 100s, no round-up).", "success")
+
+        # --- SCENARIO 2: PAYING FROM A SUB-WALLET (No Round-Up) ---
         else:
-            sub_id = int(wallet_source.split('_')[1])
-            cursor.execute("SELECT balance, name FROM sub_wallet WHERE id=%s AND user_id=%s", (sub_id, session['user_id']))
-            row = cursor.fetchone()
-            if not row or float(row['balance']) < amount:
-                flash("Insufficient funds in Sub Wallet!", "error")
-                return redirect(url_for('dashboard'))
-            cursor.execute("UPDATE sub_wallet SET balance = balance - %s WHERE id=%s", (amount, sub_id))
-            source_name = row['name']
+            sub_id = wallet_source.split('_')[1]
+            cursor.execute("UPDATE sub_wallet SET balance = balance - %s WHERE id=%s AND user_id=%s", (amount_spent, sub_id, session['user_id']))
+            
+            cursor.execute("SELECT name FROM sub_wallet WHERE id=%s", (sub_id,))
+            sub_name = cursor.fetchone()['name']
+            
+            # Log the normal payment expense (REMOVED 'description')
+            cursor.execute("""
+                INSERT INTO transactions (user_id, wallet_name, transaction_type, amount) 
+                VALUES (%s, %s, %s, %s)
+            """, (session['user_id'], sub_name, 'Payment', amount_spent))
+            
+            flash("Payment successful from Sub-Wallet!", "success")
 
-        # Insert transaction
-        cursor.execute(
-            "INSERT INTO transactions (user_id, amount, wallet_name, transaction_type) VALUES (%s,%s,%s,%s)",
-            (session['user_id'], amount, source_name, 'Payment')
-        )
         conn.commit()
-        flash(f"Paid ₹{amount} from {source_name} via Razorpay!", "success")
-
-    except razorpay.errors.SignatureVerificationError:
-        flash("Payment verification failed! Money was not deducted.", "error")
     except Exception as e:
-        print("Transaction Error:", e)
-        flash("Transaction failed.", "error")
+        print("Payment Error:", e)
+        conn.rollback() 
+        flash("Payment failed to process.", "error")
     finally:
         if 'cursor' in locals():
             cursor.close()
             conn.close()
 
-    return redirect(url_for('dashboard'))
+    return redirect(url_for('wallets'))
 
 # ==========================================
 # PART 3: INITIATE "ADD FUNDS" ORDER
@@ -609,6 +676,415 @@ def set_budget():
     return redirect(url_for('dashboard'))
 
 
+# ==========================================
+# 1. WALLETS & GOALS PAGE ROUTE
+# ==========================================
+# ==========================================
+# 1. WALLETS & GOALS PAGE ROUTE
+# ==========================================
+@app.route('/wallets')
+def wallets():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    conn, cursor = get_db_connection()
+    try:
+        cursor.execute("SELECT fullname, email FROM user WHERE id=%s", (session['user_id'],))
+        user_data = cursor.fetchone()
+
+        cursor.execute("SELECT wallet_id, balance FROM wallet WHERE user_id=%s", (session['user_id'],))
+        wallet_data = cursor.fetchone()
+
+        cursor.execute("SELECT id, name, balance FROM sub_wallet WHERE user_id=%s", (session['user_id'],))
+        sub_wallets_data = cursor.fetchall()
+
+        # Fetch the goals
+       # Change this line inside def wallets():
+        cursor.execute("SELECT * FROM savings_goals WHERE user_id=%s ORDER BY is_priority DESC, id ASC", (session['user_id'],))
+        goals_data = cursor.fetchall()
+
+        # BULLETPROOF MATH: Safely handle None or missing values
+        for goal in goals_data:
+            # Safely convert to float, defaulting to 0.0 if something is weird
+            target = float(goal.get('target_amount') or 0.0)
+            current = float(goal.get('current_balance') or 0.0)
+            
+            if target > 0:
+                percent = (current / target) * 100
+                goal['percent'] = min(int(percent), 100) # Cap at 100%
+            else:
+                goal['percent'] = 0
+
+    except Exception as e:
+        print("CRITICAL ERROR ON WALLETS PAGE:", e) # This will print in red in your terminal if it fails!
+        user_data, wallet_data, sub_wallets_data, goals_data = {}, {}, [], []
+    finally:
+        if 'cursor' in locals():
+            cursor.close()
+            conn.close()
+
+    return render_template("wallet.html", 
+                           user=user_data, 
+                           wallet=wallet_data, 
+                           sub_wallets=sub_wallets_data,
+                           goals=goals_data)
+# ==========================================
+# 2. CREATE SAVINGS GOAL ROUTE
+# ==========================================
+@app.route('/create_goal', methods=['POST'])
+def create_goal():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    goal_name = request.form.get('goal_name')
+    target_amount = float(request.form.get('target_amount', 0))
+    goal_icon = request.form.get('goal_icon', 'stars')
+
+    if target_amount <= 0 or not goal_name:
+        flash("Invalid goal details.", "error")
+        return redirect(url_for('wallets'))
+
+    conn, cursor = get_db_connection()
+    try:
+        cursor.execute(
+            "INSERT INTO savings_goals (user_id, name, target_amount, current_balance, icon) VALUES (%s, %s, %s, %s, %s)",
+            (session['user_id'], goal_name, target_amount, 0.0, goal_icon)
+        )
+        conn.commit()
+        flash(f"Goal '{goal_name}' created successfully!", "success")
+    except Exception as e:
+        print("Error creating goal:", e)
+        flash("Failed to create savings goal.", "error")
+    finally:
+        if 'cursor' in locals():
+            cursor.close()
+            conn.close()
+
+    return redirect(url_for('wallets'))
+
+
+
+
+
+# ==========================================
+# DELETE SAVINGS GOAL
+# ==========================================
+@app.route('/delete_goal/<int:goal_id>', methods=['POST'])
+def delete_goal(goal_id):
+    if 'user_id' not in session: return redirect(url_for('login'))
+    conn, cursor = get_db_connection()
+    try:
+        # Check if goal exists and has money in it
+        cursor.execute("SELECT current_balance, name FROM savings_goals WHERE id=%s AND user_id=%s", (goal_id, session['user_id']))
+        goal = cursor.fetchone()
+        
+        if goal:
+            # If there is money in the goal, refund it to the Main Wallet!
+            if float(goal.get('current_balance') or 0) > 0:
+                cursor.execute("UPDATE wallet SET balance = balance + %s WHERE user_id=%s", (goal['current_balance'], session['user_id']))
+            
+            # Delete the goal
+            cursor.execute("DELETE FROM savings_goals WHERE id=%s", (goal_id,))
+            conn.commit()
+            flash(f"Goal '{goal['name']}' discarded. Funds refunded to Main Wallet.", "success")
+    except Exception as e:
+        print("Error deleting goal:", e)
+        flash("Could not delete goal.", "error")
+    finally:
+        if 'cursor' in locals(): cursor.close(); conn.close()
+    return redirect(url_for('wallets'))
+
+# ==========================================
+# MAKE GOAL PRIORITY 1
+# ==========================================
+@app.route('/make_priority/<int:goal_id>', methods=['POST'])
+def make_priority(goal_id):
+    if 'user_id' not in session: return redirect(url_for('login'))
+    conn, cursor = get_db_connection()
+    try:
+        # Step 1: Remove priority from all goals for this user
+        cursor.execute("UPDATE savings_goals SET is_priority = FALSE WHERE user_id=%s", (session['user_id'],))
+        # Step 2: Set the selected goal as the new priority
+        cursor.execute("UPDATE savings_goals SET is_priority = TRUE WHERE id=%s AND user_id=%s", (goal_id, session['user_id']))
+        conn.commit()
+        flash("Priority updated successfully!", "success")
+    except Exception as e:
+        print("Error updating priority:", e)
+    finally:
+        if 'cursor' in locals(): cursor.close(); conn.close()
+    return redirect(url_for('wallets'))
+
+
+# ==========================================
+# DISABLE SAVINGS FEATURE (KILL SWITCH)
+# ==========================================# ==========================================
+# DISABLE SAVINGS FEATURE (KILL SWITCH)
+# ==========================================
+@app.route('/disable_savings', methods=['POST'])
+def disable_savings():
+    if 'user_id' not in session: 
+        return redirect(url_for('login'))
+        
+    conn, cursor = get_db_connection()
+    try:
+        # 1. Calculate how much total money is stored in all savings goals
+        cursor.execute("SELECT SUM(current_balance) as total_saved FROM savings_goals WHERE user_id=%s", (session['user_id'],))
+        result = cursor.fetchone()
+        total_saved = float(result['total_saved'] or 0)
+        
+        # 2. If there is money, instantly refund it to the Main Wallet AND log it
+        if total_saved > 0:
+            # Add to Main Wallet
+            cursor.execute("UPDATE wallet SET balance = balance + %s WHERE user_id=%s", (total_saved, session['user_id']))
+            
+            # LOG THE TRANSACTION IN HISTORY
+            cursor.execute("""
+                INSERT INTO transactions (user_id, wallet_name, transaction_type, amount) 
+                VALUES (%s, %s, %s, %s)
+            """, (session['user_id'], 'Savings Refund', 'Transfer', total_saved))
+            
+        # 3. Delete all goals to completely "disable" the feature
+        cursor.execute("DELETE FROM savings_goals WHERE user_id=%s", (session['user_id'],))
+        conn.commit()
+        
+        flash(f"Savings Feature Disabled. ₹{total_saved} refunded to Main Wallet.", "success")
+    except Exception as e:
+        print("Error disabling savings:", e)
+        conn.rollback() # Failsafe
+        flash("Failed to disable savings.", "error")
+    finally:
+        if 'cursor' in locals(): 
+            cursor.close()
+            conn.close()
+            
+    return redirect(url_for('wallets'))
+
+
+
+
+    
+ # ==========================================
+# ANALYSIS & CHARTS PAGE
+# ==========================================
+@app.route('/analysis')
+def analysis():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    conn, cursor = get_db_connection()
+    try:
+        # 1. Get User info
+        cursor.execute("SELECT fullname FROM user WHERE id=%s", (session['user_id'],))
+        user_data = cursor.fetchone()
+
+        # 2. Get Balances for Asset Allocation Chart
+        cursor.execute("SELECT balance FROM wallet WHERE user_id=%s", (session['user_id'],))
+        main_wallet = cursor.fetchone()
+        main_bal = float(main_wallet['balance'] if main_wallet else 0)
+
+        cursor.execute("SELECT SUM(balance) as total FROM sub_wallet WHERE user_id=%s", (session['user_id'],))
+        sub_wallet_total = float(cursor.fetchone()['total'] or 0)
+
+        cursor.execute("SELECT SUM(current_balance) as total FROM savings_goals WHERE user_id=%s", (session['user_id'],))
+        savings_total = float(cursor.fetchone()['total'] or 0)
+
+        total_net_worth = main_bal + sub_wallet_total + savings_total
+
+        # 3. Get Expense Breakdown 
+        cursor.execute("""
+            SELECT wallet_name, SUM(amount) as total_spent 
+            FROM transactions 
+            WHERE user_id=%s AND transaction_type='Payment'
+            GROUP BY wallet_name
+        """, (session['user_id'],))
+        expenses = cursor.fetchall()
+        
+        expense_labels = [exp['wallet_name'] for exp in expenses] if expenses else ["No Data"]
+        expense_values = [float(exp['total_spent']) for exp in expenses] if expenses else [0]
+        total_spent = sum(expense_values)
+
+        # 4. Get Total Auto-Saved
+        cursor.execute("""
+            SELECT SUM(amount) as total_saved 
+            FROM transactions 
+            WHERE user_id=%s AND transaction_type='Transfer' AND wallet_name LIKE 'Goal:%%'
+        """, (session['user_id'],))
+        auto_saved_data = cursor.fetchone()
+        auto_saved = float(auto_saved_data['total_saved'] if auto_saved_data and auto_saved_data['total_saved'] else 0)
+
+        # ==========================================
+        # 5. 🚀 BULLETPROOF ENVELOPE BURN RATE
+        # ==========================================
+        health_warnings = []
+        
+        cursor.execute("SELECT name, balance FROM sub_wallet WHERE user_id=%s", (session['user_id'],))
+        current_balances = {row['name']: float(row['balance']) for row in cursor.fetchall()}
+
+        cursor.execute("""
+            SELECT wallet_name, SUM(amount) as total_spent, MIN(timestamp) as first_date
+            FROM transactions
+            WHERE user_id=%s AND transaction_type='Payment' AND wallet_name != 'Main Wallet' AND wallet_name NOT LIKE 'Goal:%%'
+            GROUP BY wallet_name
+        """, (session['user_id'],))
+        envelope_data = cursor.fetchall()
+
+        for env in envelope_data:
+            name = env['wallet_name']
+            spent = float(env['total_spent'] or 0)
+            
+            days_active = 1 
+            first_date = env['first_date']
+            
+            if first_date:
+                if isinstance(first_date, str):
+                    try:
+                        first_date = datetime.strptime(str(first_date).split('.')[0], '%Y-%m-%d %H:%M:%S')
+                    except Exception:
+                        pass
+                
+                if isinstance(first_date, datetime):
+                    delta = (datetime.now() - first_date).days
+                    if delta > 0:
+                        days_active = delta
+            
+            daily_burn = spent / days_active
+            
+            if name in current_balances:
+                bal = current_balances[name]
+                if daily_burn > 0 and bal > 0:
+                    days_left = int(bal / daily_burn)
+                    if days_left <= 14:
+                        health_warnings.append({
+                            "name": name,
+                            "burn_rate": daily_burn,
+                            "days_left": days_left,
+                            "balance": bal
+                        })
+                elif bal <= 0 and spent > 0:
+                    health_warnings.append({
+                        "name": name,
+                        "burn_rate": daily_burn,
+                        "days_left": 0,
+                        "balance": 0
+                    })
+
+        # ==========================================
+        # 6. PACKAGE CHART DATA (This is what got deleted!)
+        # ==========================================
+        chart_data = {
+            "assets_labels": ["Main Wallet", "Sub-Wallets", "Savings Goals"],
+            "assets_values": [main_bal, sub_wallet_total, savings_total],
+            "expense_labels": expense_labels,
+            "expense_values": expense_values
+        }
+
+    except Exception as e:
+        print("Analysis Error:", e)
+        user_data = {}
+        total_net_worth = 0
+        total_spent = 0
+        auto_saved = 0
+        chart_data = {}
+        health_warnings = []
+    finally:
+        if 'cursor' in locals():
+            cursor.close()
+            conn.close()
+
+    return render_template("analysis.html", 
+                           user=user_data, 
+                           net_worth=total_net_worth,
+                           total_spent=total_spent,
+                           auto_saved=auto_saved,
+                           chart_data=chart_data,
+                           health_warnings=health_warnings)
+    
+    
+    
+# ==========================================
+# TRANSACTION HISTORY PAGE
+# ==========================================
+@app.route('/history')
+def history():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+        
+    conn, cursor = get_db_connection()
+    try:
+        cursor.execute("SELECT fullname FROM user WHERE id=%s", (session['user_id'],))
+        user_data = cursor.fetchone()
+
+        # Get ALL transactions, not just the top 5
+        cursor.execute("SELECT * FROM transactions WHERE user_id=%s ORDER BY timestamp DESC", (session['user_id'],))
+        all_transactions = cursor.fetchall()
+    except Exception as e:
+        print("History Error:", e)
+        user_data, all_transactions = {}, []
+    finally:
+        if 'cursor' in locals():
+            cursor.close()
+            conn.close()
+
+    return render_template("history.html", user=user_data, transactions=all_transactions)
+
+# ==========================================
+# USER PROFILE PAGE
+# ==========================================
+@app.route('/profile')
+def profile():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+        
+    conn, cursor = get_db_connection()
+    try:
+        # Get full user details (adjust column names like 'email' if your DB uses different names)
+        cursor.execute("SELECT * FROM user WHERE id=%s", (session['user_id'],))
+        user_data = cursor.fetchone()
+        
+        # Count total transactions for a fun profile stat
+        cursor.execute("SELECT COUNT(*) as tx_count FROM transactions WHERE user_id=%s", (session['user_id'],))
+        tx_data = cursor.fetchone()
+        tx_count = tx_data['tx_count'] if tx_data else 0
+    except Exception as e:
+        print("Profile Error:", e)
+        user_data, tx_count = {}, 0
+    finally:
+        if 'cursor' in locals():
+            cursor.close()
+            conn.close()
+            
+            
+
+    return render_template("profile.html", user=user_data, tx_count=tx_count)
+
+
+# ==========================================
+# UPDATE PROFILE ROUTE
+# ==========================================
+@app.route('/update_profile', methods=['POST'])
+def update_profile():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+        
+    new_name = request.form.get('fullname')
+    new_email = request.form.get('email')
+    
+    conn, cursor = get_db_connection()
+    try:
+        # Update the user's name and email in the database
+        cursor.execute("UPDATE user SET fullname=%s, email=%s WHERE id=%s", (new_name, new_email, session['user_id']))
+        conn.commit()
+        flash("Profile updated successfully!", "success")
+    except Exception as e:
+        print("Update Profile Error:", e)
+        flash("Error updating profile.", "error")
+    finally:
+        if 'cursor' in locals():
+            cursor.close()
+            conn.close()
+            
+    # Refresh the page to show the new details!
+    return redirect(url_for('profile'))
         
         
 @app.route('/logout')

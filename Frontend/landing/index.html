@@ -4,17 +4,17 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>WMS – Smart Wallet</title>
-  <link rel="stylesheet" href="../landing/landingpage.css" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='landing/landingpage.css') }}">
 </head>
 <body>
 
   <!-- HEADER -->
   <header class="header">
     <div class="logo">
-      <img src="img/wallet.svg" alt="">
+    <!-- <img src="{{ url_for('static', filename='img/w.jpg') }}"> -->
       <span>WMS</span>
     </div>
-    <button class="launch-btn">LAUNCH APP</button>
+   <a href="{{ url_for('signup') }}" class="launch-btn">LAUNCH APP</a>
   </header>
 
   <!-- HERO SECTION -->
@@ -33,7 +33,7 @@
       </p>
 
       <div class="hero-actions">
-        <button class="primary">GET STARTED</button>
+       <a href="{{ url_for('signup') }}" class="primary">GET STARTED</a>
         <button class="secondary">EXPLORE DEMO</button>
       </div>
     </div>
@@ -76,7 +76,7 @@
         <div class="card main-card">
 
   <div class="card-header">
-    <img src="../img/wallet.svg" alt="Wallet" class="wallet-icon">
+   <img src="{{ url_for('static', filename='img/wallet.svg') }}" alt="Wallet" class="wallet-icon">
     <span class="wms-text">WMS</span>
   </div>
 
@@ -132,6 +132,6 @@
     <p class="footer-copy">&copy; 2026 WMS. All rights reserved.</p>
   </footer>
 
-  <script src="script.js"></script>
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>

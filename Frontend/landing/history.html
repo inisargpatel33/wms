@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>History - SWM</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">tailwind.config = { theme: { extend: { colors: { "primary-purple": "#a855f7", "dark-purple": "#4c1d95" }, fontFamily: { "display": ["Inter", "sans-serif"] }, }, }, }</script>
+<style> body { font-family: 'Inter', sans-serif; } </style>
+</head>
+<body class="bg-slate-50 text-slate-900 font-display min-h-screen">
+<div class="flex h-screen overflow-hidden">
+<aside class="w-64 border-r border-slate-200 bg-slate-50 flex flex-col shrink-0 hidden lg:flex">
+    <div class="p-6 flex flex-col gap-8 h-full">
+        <div class="flex gap-3 items-center">
+            <svg class="size-8 rounded-lg shadow-purple-200 shadow-lg" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="40" height="40" rx="10" fill="#a855f7"/>
+                <path d="M20 12V28M14 20H26" stroke="white" stroke-width="3" stroke-linecap="round"/>
+            </svg>
+            <h1 class="text-purple-900 text-lg font-black tracking-tighter">SWM</h1>
+        </div>
+        <nav class="flex flex-col gap-1">
+            <a href="/dashboard" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-dark-purple transition-colors">
+                <span class="material-symbols-outlined">home</span><span class="text-sm font-medium">Home</span>
+            </a>
+            <a href="/analysis" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-dark-purple transition-colors">
+                <span class="material-symbols-outlined">pie_chart</span><span class="text-sm font-medium">Analysis</span>
+            </a>
+            <a href="/wallets" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-dark-purple transition-colors">
+                <span class="material-symbols-outlined">account_balance_wallet</span><span class="text-sm font-medium">Wallets</span>
+            </a>
+            <a href="/profile" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-dark-purple transition-colors">
+                <span class="material-symbols-outlined">person</span><span class="text-sm font-medium">Profile</span>
+            </a>
+            
+            <a href="/history" class="flex items-center gap-3 px-3 py-2 rounded-lg bg-purple-100 text-slate-900 transition-all shadow-sm">
+                <span class="material-symbols-outlined text-primary-purple" style="font-variation-settings: 'FILL' 1;">receipt_long</span><span class="text-sm font-bold">History</span>
+            </a>
+        </nav>
+    </div>
+</aside>
+
+<main class="flex-1 flex flex-col overflow-y-auto pb-24 lg:pb-0">
+    <header class="flex items-center justify-between border-b border-slate-200 py-4 sticky top-0 bg-white/80 backdrop-blur-md z-10 px-4 lg:px-8">
+        <div class="flex items-center gap-2"><span class="material-symbols-outlined text-primary-purple text-3xl">receipt_long</span><h2 class="text-dark-purple text-xl font-bold tracking-tight">Full Transaction History</h2></div>
+    </header>
+
+    <div class="p-4 md:p-8 max-w-4xl mx-auto w-full">
+        <div class="bg-white rounded-[2rem] border border-slate-100 overflow-hidden shadow-sm divide-y divide-slate-50">
+            {% if transactions %}
+                {% for tx in transactions %}
+                <div class="p-5 flex justify-between items-center hover:bg-slate-50 transition-all group">
+                    <div class="flex items-center gap-4">
+                        <div class="size-12 rounded-2xl flex items-center justify-center transition-all {% if tx.transaction_type == 'Payment' %} bg-purple-50 text-primary-purple {% else %} bg-green-50 text-green-500 {% endif %}">
+                            <span class="material-symbols-outlined">{% if tx.transaction_type == 'Payment' %}shopping_bag{% else %}payments{% endif %}</span>
+                        </div>
+                        <div>
+                            <p class="font-bold text-sm text-slate-900">{{ tx.wallet_name }}</p>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">{{ tx.transaction_type }} • {{ tx.timestamp }}</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-black text-sm tracking-tight {% if tx.transaction_type == 'Payment' %}text-slate-900{% else %}text-green-500{% endif %}">{% if tx.transaction_type == 'Payment' %}-{% else %}+{% endif %}₹{{ "{:,.2f}".format(tx.amount) }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="py-20 flex flex-col items-center justify-center text-center">
+                    <span class="material-symbols-outlined text-5xl text-slate-300 mb-4">history_toggle_off</span>
+                    <h5 class="text-slate-800 font-black text-2xl mb-2">It's quiet here...</h5>
+                    <p class="text-slate-500 text-sm">You haven't made any transactions yet.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</main>
+</div>
+
+<nav class="lg:hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-slate-200 flex items-center justify-between px-4 sm:px-6 py-3 z-[100] shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.05)]">
+        <a href="/dashboard" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors"><span class="material-symbols-outlined text-2xl">home</span><span class="text-[10px] font-bold">Home</span></a>
+        <a href="/analysis" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors"><span class="material-symbols-outlined text-2xl">pie_chart</span><span class="text-[10px] font-bold">Analysis</span></a>
+        <a href="/wallets" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors"><span class="material-symbols-outlined text-2xl">account_balance_wallet</span><span class="text-[10px] font-bold">Wallets</span></a>
+        <a href="/profile" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors"><span class="material-symbols-outlined text-2xl">person</span><span class="text-[10px] font-bold">Profile</span></a>
+        <a href="/history" class="flex flex-col items-center gap-1 text-purple-600"><span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">receipt_long</span><span class="text-[10px] font-black tracking-wider">History</span></a>
+    </nav>
+
+</body>
+</html>
