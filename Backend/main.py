@@ -1,9 +1,10 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 from werkzeug.security import check_password_hash, generate_password_hash
+from email_service import send_swm_email, get_burn_rate_template, get_goal_completed_template
 import mysql.connector
 import random
 import math
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import razorpay
 import os
@@ -230,9 +231,9 @@ def dashboard():
             insights["most_frequent_wallet"] = frequent_wallet['wallet_name']
 
         # ==========================================
-        # 🚀 HEALTH WARNINGS (BURN RATE)
+        # 🚀 HEALTH WARNINGS (BURN RATE) - UPGRADED
         # ==========================================
-        health_warnings = []
+        envelope_health = []
         
         cursor.execute("SELECT name, balance FROM sub_wallet WHERE user_id=%s", (session['user_id'],))
         current_balances = {row['name']: float(row['balance']) for row in cursor.fetchall()}
@@ -255,7 +256,6 @@ def dashboard():
             if first_date:
                 if isinstance(first_date, str):
                     try:
-                        # Removed the problematic import from here!
                         first_date = datetime.strptime(str(first_date).split('.')[0], '%Y-%m-%d %H:%M:%S')
                     except Exception:
                         pass
@@ -272,28 +272,35 @@ def dashboard():
                 if daily_burn > 0 and bal > 0:
                     days_left = int(bal / daily_burn)
                     if days_left <= 14:
-                        health_warnings.append({
-                            "name": name,
-                            "burn_rate": daily_burn,
-                            "days_left": days_left,
-                            "balance": bal
+                        envelope_health.append({
+                            "name": name, "burn_rate": daily_burn, "days_left": days_left, "balance": bal, "status": "warning"
+                        })
+                    else:
+                        envelope_health.append({
+                            "name": name, "burn_rate": daily_burn, "days_left": days_left, "balance": bal, "status": "healthy"
                         })
                 elif bal <= 0 and spent > 0:
-                    health_warnings.append({
-                        "name": name,
-                        "burn_rate": daily_burn,
-                        "days_left": 0,
-                        "balance": 0
+                    envelope_health.append({
+                        "name": name, "burn_rate": daily_burn, "days_left": 0, "balance": 0, "status": "critical"
+                    })
+
+        # Also grab sub-wallets that have money but NO spending yet
+        for name, bal in current_balances.items():
+            if not any(env.get('name') == name for env in envelope_health):
+                if bal > 0:
+                    envelope_health.append({
+                        "name": name, "burn_rate": 0, "days_left": 999, "balance": bal, "status": "untouched"
                     })
 
     except Exception as e:
         print("Dashboard Error:", e)
-        user_data, wallet_data, sub_wallets_data, total_balance, total_spent, recent_transactions, insights, health_warnings = {}, {}, [], 0, 0, [], {}, []
+        user_data, wallet_data, sub_wallets_data, total_balance, total_spent, recent_transactions, insights, envelope_health = {}, {}, [], 0, 0, [], {}, []
     finally:
         if 'cursor' in locals():
             cursor.close()
             conn.close()
 
+    # NOTE: Changed health_warnings to envelope_health below!
     return render_template("dash2.html", 
                            user=user_data, 
                            wallet=wallet_data, 
@@ -303,10 +310,9 @@ def dashboard():
                            transactions=recent_transactions,
                            insights=insights,
                            all_transactions=all_transactions,
-                           health_warnings=health_warnings)      
-        
-              
-        
+                           envelope_health=envelope_health)
+    
+    
  # ==========================================
 # 1. CREATE SUB-WALLET (Now with History Logging)
 # ==========================================
@@ -534,19 +540,35 @@ def verify_payment():
                     # Deduct the spare change from Main Wallet
                     cursor.execute("UPDATE wallet SET balance = balance - %s WHERE user_id=%s", (spare_change, session['user_id']))
                     
-                    # Add it to the Priority Goal!
+                   # Add it to the Priority Goal!
                     cursor.execute("UPDATE savings_goals SET current_balance = current_balance + %s WHERE id=%s", (spare_change, priority_goal['id']))
                     
-                    # Log the auto-transfer (REMOVED 'description')
                     # Log the auto-transfer with the Goal's name!
                     goal_label = f"Goal: {priority_goal['name']}"
                     cursor.execute("""
                         INSERT INTO transactions (user_id, wallet_name, transaction_type, amount) 
                         VALUES (%s, %s, %s, %s)
                     """, (session['user_id'], goal_label, 'Transfer', spare_change))                    
-                    flash(f"Payment successful! ₹{spare_change} automatically saved to '{priority_goal['name']}'.", "success")
-                else:
-                    flash("Payment successful!", "success")
+
+                    # ==========================================
+                    # 📩 EMAIL CHECK: DID WE JUST FINISH THE GOAL?
+                    # ==========================================
+                    cursor.execute("SELECT fullname, email FROM user WHERE id=%s", (session['user_id'],))
+                    user_info = cursor.fetchone()
+                    
+                    cursor.execute("SELECT name, target_amount, current_balance FROM savings_goals WHERE id=%s", (priority_goal['id'],))
+                    updated_goal = cursor.fetchone()
+
+                    if updated_goal and float(updated_goal['current_balance']) >= float(updated_goal['target_amount']):
+                        html_body = get_goal_completed_template(
+                            user_name=user_info['fullname'],
+                            goal_name=updated_goal['name'],
+                            total_saved=float(updated_goal['current_balance'])
+                        )
+                        send_swm_email(to_email=user_info['email'], subject=f"Goal Completed: {updated_goal['name']}! 🎉", html_content=html_body)
+                        flash(f"Payment successful! ₹{spare_change} automatically saved to '{priority_goal['name']}'.", "success")
+                    else:
+                        flash("Payment successful!", "success")
             else:
                 flash("Payment successful! (Exact 100s, no round-up).", "success")
 
@@ -558,14 +580,52 @@ def verify_payment():
             cursor.execute("SELECT name FROM sub_wallet WHERE id=%s", (sub_id,))
             sub_name = cursor.fetchone()['name']
             
-            # Log the normal payment expense (REMOVED 'description')
+          # Log the normal payment expense (REMOVED 'description')
             cursor.execute("""
                 INSERT INTO transactions (user_id, wallet_name, transaction_type, amount) 
                 VALUES (%s, %s, %s, %s)
             """, (session['user_id'], sub_name, 'Payment', amount_spent))
             
-            flash("Payment successful from Sub-Wallet!", "success")
+            # ==========================================
+            # 📩 EMAIL CHECK: IS THIS ENVELOPE BURNING TOO FAST?
+            # ==========================================
+            cursor.execute("SELECT fullname, email FROM user WHERE id=%s", (session['user_id'],))
+            user_info = cursor.fetchone()
 
+            cursor.execute("SELECT balance FROM sub_wallet WHERE id=%s", (sub_id,))
+            current_bal = float(cursor.fetchone()['balance'])
+
+            cursor.execute("""
+                SELECT SUM(amount) as total_spent, MIN(timestamp) as first_date
+                FROM transactions WHERE user_id=%s AND transaction_type='Payment' AND wallet_name=%s
+            """, (session['user_id'], sub_name))
+            stats = cursor.fetchone()
+
+            if stats and stats['total_spent'] and current_bal > 0:
+                spent = float(stats['total_spent'])
+                first_date = stats['first_date']
+                days_active = 1
+                
+                if isinstance(first_date, str):
+                    try: first_date = datetime.strptime(str(first_date).split('.')[0], '%Y-%m-%d %H:%M:%S')
+                    except: pass
+                if isinstance(first_date, datetime):
+                    delta = (datetime.now() - first_date).days
+                    if delta > 0: days_active = delta
+                
+                daily_burn = spent / days_active
+                if daily_burn > 0:
+                    days_left = int(current_bal / daily_burn)
+                    if days_left <= 14:
+                        html_body = get_burn_rate_template(
+                            user_name=user_info['fullname'],
+                            wallet_name=sub_name,
+                            burn_rate=daily_burn,
+                            days_left=days_left
+                        )
+                        send_swm_email(to_email=user_info['email'], subject=f"⚠️ High Spend Alert: {sub_name}", html_content=html_body)
+
+            flash("Payment successful from Sub-Wallet!", "success")
         conn.commit()
     except Exception as e:
         print("Payment Error:", e)
@@ -872,7 +932,11 @@ def analysis():
         return redirect(url_for('login'))
 
     conn, cursor = get_db_connection()
+    
     try:
+        days_filter = request.args.get('days', 30, type=int)
+        cutoff_date = (datetime.now() - timedelta(days=days_filter)).strftime('%Y-%m-%d 00:00:00')
+        
         # 1. Get User info
         cursor.execute("SELECT fullname FROM user WHERE id=%s", (session['user_id'],))
         user_data = cursor.fetchone()
@@ -892,11 +956,14 @@ def analysis():
 
         # 3. Get Expense Breakdown 
         cursor.execute("""
-            SELECT wallet_name, SUM(amount) as total_spent 
-            FROM transactions 
-            WHERE user_id=%s AND transaction_type='Payment'
-            GROUP BY wallet_name
-        """, (session['user_id'],))
+        SELECT wallet_name, SUM(amount) as total_spent 
+        FROM transactions 
+        WHERE user_id=%s 
+        AND transaction_type='Payment'
+        AND (wallet_name = 'Main Wallet' OR wallet_name IN (SELECT name FROM sub_wallet WHERE user_id=%s))
+        AND timestamp >= %s
+        GROUP BY wallet_name
+        """, (session['user_id'], session['user_id'], cutoff_date))
         expenses = cursor.fetchall()
         
         expense_labels = [exp['wallet_name'] for exp in expenses] if expenses else ["No Data"]
@@ -907,15 +974,17 @@ def analysis():
         cursor.execute("""
             SELECT SUM(amount) as total_saved 
             FROM transactions 
-            WHERE user_id=%s AND transaction_type='Transfer' AND wallet_name LIKE 'Goal:%%'
-        """, (session['user_id'],))
+            WHERE user_id=%s 
+              AND transaction_type='Transfer' 
+              AND wallet_name LIKE 'Goal:%%'
+              AND timestamp >= %s
+        """, (session['user_id'], cutoff_date))
         auto_saved_data = cursor.fetchone()
         auto_saved = float(auto_saved_data['total_saved'] if auto_saved_data and auto_saved_data['total_saved'] else 0)
-
-        # ==========================================
+       # ==========================================
         # 5. 🚀 BULLETPROOF ENVELOPE BURN RATE
         # ==========================================
-        health_warnings = []
+        envelope_health = []
         
         cursor.execute("SELECT name, balance FROM sub_wallet WHERE user_id=%s", (session['user_id'],))
         current_balances = {row['name']: float(row['balance']) for row in cursor.fetchall()}
@@ -954,20 +1023,26 @@ def analysis():
                 if daily_burn > 0 and bal > 0:
                     days_left = int(bal / daily_burn)
                     if days_left <= 14:
-                        health_warnings.append({
-                            "name": name,
-                            "burn_rate": daily_burn,
-                            "days_left": days_left,
-                            "balance": bal
+                        envelope_health.append({
+                            "name": name, "burn_rate": daily_burn, "days_left": days_left, "balance": bal, "status": "warning"
+                        })
+                    else:
+                        envelope_health.append({
+                            "name": name, "burn_rate": daily_burn, "days_left": days_left, "balance": bal, "status": "healthy"
                         })
                 elif bal <= 0 and spent > 0:
-                    health_warnings.append({
-                        "name": name,
-                        "burn_rate": daily_burn,
-                        "days_left": 0,
-                        "balance": 0
+                    envelope_health.append({
+                        "name": name, "burn_rate": daily_burn, "days_left": 0, "balance": 0, "status": "critical"
                     })
 
+        # Also grab sub-wallets that have money but NO spending yet
+        for name, bal in current_balances.items():
+            if not any(env.get('name') == name for env in envelope_health):
+                if bal > 0:
+                    envelope_health.append({
+                        "name": name, "burn_rate": 0, "days_left": 999, "balance": bal, "status": "untouched"
+                    })
+                    
         # ==========================================
         # 6. PACKAGE CHART DATA (This is what got deleted!)
         # ==========================================
@@ -985,7 +1060,7 @@ def analysis():
         total_spent = 0
         auto_saved = 0
         chart_data = {}
-        health_warnings = []
+        envelope_health = []
     finally:
         if 'cursor' in locals():
             cursor.close()
@@ -997,7 +1072,7 @@ def analysis():
                            total_spent=total_spent,
                            auto_saved=auto_saved,
                            chart_data=chart_data,
-                           health_warnings=health_warnings)
+                          envelope_health=envelope_health)
     
     
     
@@ -1085,6 +1160,154 @@ def update_profile():
             
     # Refresh the page to show the new details!
     return redirect(url_for('profile'))
+        
+        
+        
+        
+        
+@app.route('/pay_goal/<int:goal_id>', methods=['POST'])
+def pay_goal(goal_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    # Get the amount the user actually spent from the new modal!
+    amount_spent = float(request.form.get('amount_spent', 0))
+
+    conn, cursor = get_db_connection()
+    try:
+        cursor.execute("SELECT * FROM savings_goals WHERE id=%s AND user_id=%s", (goal_id, session['user_id']))
+        goal = cursor.fetchone()
+
+        current_balance = float(goal['current_balance'])
+
+        # Safety Check: Did they try to spend more than they saved?
+        if amount_spent > current_balance:
+            flash("You cannot spend more than the total saved in this goal!", "error")
+            return redirect(url_for('wallets'))
+
+        # 🔥 THE MATH LOGIC 🔥
+        leftover_change = current_balance - amount_spent
+
+        # 1. Log the actual expense transaction (e.g., spending ₹88)
+        cursor.execute("""
+            INSERT INTO transactions (user_id, wallet_name, transaction_type, amount) 
+            VALUES (%s, %s, %s, %s)
+        """, (session['user_id'], f"Purchase: {goal['name']}", 'Payment', amount_spent))
+
+        # 2. Handle the leftover change (e.g., the extra ₹12)
+        if leftover_change > 0:
+            # Look for the next goal
+            cursor.execute("""
+                SELECT id, name FROM savings_goals 
+                WHERE user_id=%s AND id != %s 
+                ORDER BY is_priority DESC, id ASC LIMIT 1
+            """, (session['user_id'], goal_id))
+            next_goal = cursor.fetchone()
+
+            if next_goal:
+                cursor.execute("UPDATE savings_goals SET current_balance = current_balance + %s WHERE id=%s", (leftover_change, next_goal['id']))
+                flash(f"Purchase successful! The leftover ₹{leftover_change:.2f} was rolled over to '{next_goal['name']}'.", "success")
+            else:
+                cursor.execute("UPDATE wallet SET balance = balance + %s WHERE user_id=%s", (leftover_change, session['user_id']))
+                flash(f"Purchase successful! No other goals found, so your extra ₹{leftover_change:.2f} was safely returned to your Main Wallet.", "success")
+        else:
+            flash(f"Purchase successful! You spent the exact amount saved.", "success")
+
+        # 3. Delete the completed goal card forever
+        cursor.execute("DELETE FROM savings_goals WHERE id=%s", (goal_id,))
+        
+        conn.commit()
+    except Exception as e:
+        print("Goal Payment Error:", e)
+        conn.rollback()
+        flash("Something went wrong while processing your goal payment.", "error")
+    finally:
+        cursor.close()
+        conn.close()
+
+    return redirect(url_for('wallets'))
+
+
+    
+    
+@app.route('/verify_goal_payment', methods=['POST'])
+def verify_goal_payment():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    payment_id = request.form.get('razorpay_payment_id')
+    order_id = request.form.get('razorpay_order_id')
+    signature = request.form.get('razorpay_signature')
+    
+    goal_id = request.form.get('goal_id')
+    amount_spent = float(request.form.get('amount_spent', 0))
+
+    try:
+        # 1. VERIFY THE RAZORPAY SIGNATURE (Security First!)
+        client.utility.verify_payment_signature({
+            'razorpay_order_id': order_id,
+            'razorpay_payment_id': payment_id,
+            'razorpay_signature': signature
+        })
+
+        # 2. IF VERIFIED, DO THE ROLLOVER MATH
+        conn, cursor = get_db_connection()
+        
+        cursor.execute("SELECT * FROM savings_goals WHERE id=%s AND user_id=%s", (goal_id, session['user_id']))
+        goal = cursor.fetchone()
+
+        if not goal:
+            flash("Goal not found.", "error")
+            return redirect(url_for('wallets'))
+
+        current_balance = float(goal['current_balance'])
+        leftover_change = current_balance - amount_spent
+
+        # Log the actual payment out
+        cursor.execute("""
+            INSERT INTO transactions (user_id, wallet_name, transaction_type, amount) 
+            VALUES (%s, %s, %s, %s)
+        """, (session['user_id'], f"Goal Purchase: {goal['name']}", 'Payment', amount_spent))
+
+        # Handle the Leftover Change
+        if leftover_change > 0:
+            # Find the next priority goal
+            cursor.execute("""
+                SELECT id, name FROM savings_goals 
+                WHERE user_id=%s AND id != %s 
+                ORDER BY is_priority DESC, id ASC LIMIT 1
+            """, (session['user_id'], goal_id))
+            next_goal = cursor.fetchone()
+
+            if next_goal:
+                cursor.execute("UPDATE savings_goals SET current_balance = current_balance + %s WHERE id=%s", (leftover_change, next_goal['id']))
+                flash(f"Payment successful! You had ₹{leftover_change:.2f} leftover, which was auto-transferred to '{next_goal['name']}'.", "success")
+            else:
+                cursor.execute("UPDATE wallet SET balance = balance + %s WHERE user_id=%s", (leftover_change, session['user_id']))
+                flash(f"Payment successful! You had ₹{leftover_change:.2f} leftover, which was returned to your Main Wallet.", "success")
+        else:
+            flash(f"Payment successful! You spent the exact amount saved.", "success")
+
+        # Delete the completed goal
+        cursor.execute("DELETE FROM savings_goals WHERE id=%s", (goal_id,))
+        
+        conn.commit()
+
+    except razorpay.errors.SignatureVerificationError:
+        flash("Razorpay Verification failed! Payment was not recorded.", "error")
+    except Exception as e:
+        print("Goal Verification Error:", e)
+        if 'conn' in locals():
+            conn.rollback()
+        flash("Something went wrong while processing your goal.", "error")
+    finally:
+        if 'cursor' in locals():
+            cursor.close()
+            conn.close()
+
+    return redirect(url_for('wallets'))
+
+
         
         
 @app.route('/logout')

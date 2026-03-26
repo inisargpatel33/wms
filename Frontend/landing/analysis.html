@@ -106,40 +106,70 @@
 
 
 
-<div class="mb-6 md:mb-8">
-            <h3 class="text-slate-900 font-bold text-lg mb-4 flex items-center gap-2">
-                <span class="material-symbols-outlined text-primary-purple">health_and_safety</span>
-                Financial Health Check
-            </h3>
+<<div class="mb-6 md:mb-8">
+    <h3 class="text-slate-900 font-bold text-lg mb-4 flex items-center gap-2">
+        <span class="material-symbols-outlined text-primary-purple">health_and_safety</span>
+        Financial Health Check
+    </h3>
+    
+    {% if envelope_health %}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {% for env in envelope_health %}
             
-            {% if health_warnings %}
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {% for warning in health_warnings %}
-                    <div class="bg-orange-50 border border-orange-200 p-4 rounded-2xl flex items-start gap-4 shadow-sm">
-                        <div class="size-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-500 shrink-0 mt-0.5">
-                            <span class="material-symbols-outlined text-xl">warning</span>
-                        </div>
-                        <div>
-                            <h4 class="text-orange-800 font-bold text-sm mb-1 uppercase tracking-wider">High Burn Rate: {{ warning.name }}</h4>
-                            <p class="text-orange-600 text-xs md:text-sm leading-relaxed font-medium">
-                                You are spending <span class="font-black text-orange-700">₹{{ "{:,.0f}".format(warning.burn_rate) }}/day</span> from this envelope. At this rate, your remaining ₹{{ "{:,.0f}".format(warning.balance) }} will be completely empty in <span class="font-black text-orange-700 bg-orange-200/50 px-1 rounded">{{ warning.days_left }} days</span>.
-                            </p>
-                        </div>
+            {% if env.status == 'warning' or env.status == 'critical' %}
+                <div class="bg-orange-50 border border-orange-200 p-4 rounded-2xl flex items-start gap-4 shadow-sm">
+                    <div class="size-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-500 shrink-0 mt-0.5">
+                        <span class="material-symbols-outlined text-xl">warning</span>
                     </div>
-                {% endfor %}
+                    <div>
+                        <h4 class="text-orange-800 font-bold text-sm mb-1 uppercase tracking-wider">High Burn Rate: {{ env.name }}</h4>
+                        <p class="text-orange-600 text-xs md:text-sm leading-relaxed font-medium">
+                            You are spending <span class="font-black text-orange-700">₹{{ "{:,.0f}".format(env.burn_rate) }}/day</span>. At this rate, your remaining ₹{{ "{:,.0f}".format(env.balance) }} will be empty in <span class="font-black text-orange-700 bg-orange-200/50 px-1 rounded">{{ env.days_left }} days</span>.
+                        </p>
+                    </div>
                 </div>
-            {% else %}
-                <div class="bg-green-50 border border-green-200 p-4 rounded-2xl flex items-center gap-4 shadow-sm">
-                    <div class="size-10 rounded-full bg-green-100 flex items-center justify-center text-green-500 shrink-0">
+                
+            {% elif env.status == 'healthy' %}
+                <div class="bg-green-50 border border-green-200 p-4 rounded-2xl flex items-start gap-4 shadow-sm">
+                    <div class="size-10 rounded-full bg-green-100 flex items-center justify-center text-green-500 shrink-0 mt-0.5">
                         <span class="material-symbols-outlined text-xl">check_circle</span>
                     </div>
                     <div>
-                        <h4 class="text-green-800 font-bold text-sm mb-0.5 uppercase tracking-wider">All Envelopes Look Healthy!</h4>
-                        <p class="text-green-600 text-xs md:text-sm font-medium">No high burn rates detected. You are spending within your means.</p>
+                        <h4 class="text-green-800 font-bold text-sm mb-1 uppercase tracking-wider">Healthy: {{ env.name }}</h4>
+                        <p class="text-green-600 text-xs md:text-sm leading-relaxed font-medium">
+                            Spending <span class="font-black text-green-700">₹{{ "{:,.0f}".format(env.burn_rate) }}/day</span>. Your ₹{{ "{:,.0f}".format(env.balance) }} will easily last for <span class="font-black text-green-700">{{ env.days_left }} days</span>.
+                        </p>
                     </div>
                 </div>
+
+            {% elif env.status == 'untouched' %}
+                <div class="bg-blue-50 border border-blue-200 p-4 rounded-2xl flex items-start gap-4 shadow-sm">
+                    <div class="size-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-500 shrink-0 mt-0.5">
+                        <span class="material-symbols-outlined text-xl">savings</span>
+                    </div>
+                    <div>
+                        <h4 class="text-blue-800 font-bold text-sm mb-1 uppercase tracking-wider">Untouched: {{ env.name }}</h4>
+                        <p class="text-blue-600 text-xs md:text-sm leading-relaxed font-medium">
+                            No recent spending detected! You have <span class="font-black text-blue-700">₹{{ "{:,.0f}".format(env.balance) }}</span> safely sitting in this envelope.
+                        </p>
+                    </div>
+                </div>
+                
             {% endif %}
+        {% endfor %}
         </div>
+    {% else %}
+        <div class="bg-slate-50 border border-slate-200 p-4 rounded-2xl flex items-center gap-4 shadow-sm">
+            <div class="size-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 shrink-0">
+                <span class="material-symbols-outlined text-xl">account_balance_wallet</span>
+            </div>
+            <div>
+                <h4 class="text-slate-800 font-bold text-sm mb-0.5 uppercase tracking-wider">No Envelope Data Yet</h4>
+                <p class="text-slate-600 text-xs md:text-sm font-medium">Start spending from your sub-wallets to see health analytics here.</p>
+            </div>
+        </div>
+    {% endif %}
+</div>
 
 
 

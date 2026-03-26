@@ -180,18 +180,41 @@
     
     <div class="max-h-[300px] overflow-y-auto pr-2 space-y-4 scrollbar-thin scrollbar-thumb-slate-200">
         
-        {% if health_warnings %}
-            {% for warning in health_warnings %}
-            <div class="bg-gradient-to-br from-white to-red-50/50 p-5 rounded-2xl border border-red-100 shadow-sm flex items-start gap-4 shrink-0">
-                <div class="size-10 rounded-full bg-red-100 flex items-center justify-center text-red-600 shrink-0 mt-0.5"><span class="material-symbols-outlined text-xl">warning</span></div>
-                <div>
-                    <h4 class="text-red-900 font-bold text-sm mb-1 uppercase tracking-wider">High Burn Rate: {{ warning.name }}</h4>
-                    <p class="text-slate-600 text-xs md:text-sm leading-relaxed font-medium">Spending <span class="font-black text-red-600">₹{{ "{:,.0f}".format(warning.burn_rate) }}/day</span>. Your remaining ₹{{ "{:,.0f}".format(warning.balance) }} will run out in <span class="font-black text-red-600 bg-red-100 px-1 rounded">{{ warning.days_left }} days</span>.</p>
+        {% if envelope_health %}
+            {% for env in envelope_health %}
+                
+                {% if env.status == 'warning' or env.status == 'critical' %}
+                <div class="bg-gradient-to-br from-white to-red-50/50 p-5 rounded-2xl border border-red-100 shadow-sm flex items-start gap-4 shrink-0">
+                    <div class="size-10 rounded-full bg-red-100 flex items-center justify-center text-red-600 shrink-0 mt-0.5"><span class="material-symbols-outlined text-xl">warning</span></div>
+                    <div>
+                        <h4 class="text-red-900 font-bold text-sm mb-1 uppercase tracking-wider">High Burn Rate: {{ env.name }}</h4>
+                        <p class="text-slate-600 text-xs md:text-sm leading-relaxed font-medium">Spending <span class="font-black text-red-600">₹{{ "{:,.0f}".format(env.burn_rate) }}/day</span>. Your remaining ₹{{ "{:,.0f}".format(env.balance) }} will run out in <span class="font-black text-red-600 bg-red-100 px-1 rounded">{{ env.days_left }} days</span>.</p>
+                    </div>
                 </div>
-            </div>
+
+                {% elif env.status == 'healthy' %}
+                <div class="bg-gradient-to-br from-white to-green-50/50 p-5 rounded-2xl border border-green-100 shadow-sm flex items-start gap-4 shrink-0">
+                    <div class="size-10 rounded-full bg-green-100 flex items-center justify-center text-green-600 shrink-0 mt-0.5"><span class="material-symbols-outlined text-xl">check_circle</span></div>
+                    <div>
+                        <h4 class="text-green-900 font-bold text-sm mb-1 uppercase tracking-wider">Healthy: {{ env.name }}</h4>
+                        <p class="text-slate-600 text-xs md:text-sm leading-relaxed font-medium">Spending <span class="font-black text-green-600">₹{{ "{:,.0f}".format(env.burn_rate) }}/day</span>. Your ₹{{ "{:,.0f}".format(env.balance) }} will easily last for <span class="font-black text-green-600">{{ env.days_left }} days</span>.</p>
+                    </div>
+                </div>
+
+                {% elif env.status == 'untouched' %}
+                <div class="bg-gradient-to-br from-white to-teal-50/50 p-5 rounded-2xl border border-teal-100 shadow-sm flex items-start gap-4 shrink-0">
+                    <div class="size-10 rounded-full bg-teal-100 flex items-center justify-center text-teal-600 shrink-0 mt-0.5"><span class="material-symbols-outlined text-xl">savings</span></div>
+                    <div>
+                        <h4 class="text-teal-900 font-bold text-sm mb-1 uppercase tracking-wider">Untouched: {{ env.name }}</h4>
+                        <p class="text-slate-600 text-xs md:text-sm leading-relaxed font-medium">No recent spending! You have <span class="font-black text-teal-600">₹{{ "{:,.0f}".format(env.balance) }}</span> safely sitting in this envelope.</p>
+                    </div>
+                </div>
+                
+                {% endif %}
+                
             {% endfor %}
         {% endif %}
-
+        
         <div class="bg-gradient-to-br from-white to-orange-50/50 p-5 rounded-2xl border border-orange-100 shadow-sm flex items-start gap-4 shrink-0">
             <div class="size-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 shrink-0 mt-0.5"><span class="material-symbols-outlined text-xl">shopping_cart_checkout</span></div>
             <div>
