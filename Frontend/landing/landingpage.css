@@ -48,6 +48,7 @@ body {
   border-radius: 25px;
   cursor: pointer;
   font-size: 14px;
+  text-decoration: none;
 }
 
 /* =========================
@@ -107,6 +108,7 @@ body {
   border-radius: 30px;
   cursor: pointer;
   font-size: 15px;
+  text-decoration: none;
 }
 
 .secondary {

@@ -108,6 +108,8 @@ def signup():
     # The signup page is always simply rendered.
     return render_template("/signup.html")
 
+import re
+
 @app.route('/register', methods=['POST'])
 def register():
     fullname = request.form['name']
@@ -115,29 +117,54 @@ def register():
     password = request.form['password']
     confirm_password = request.form['confirm']
 
+    # 📧 Email Format Validation
+    email_pattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'
+    if not re.match(email_pattern, email):
+        flash("Invalid email format!", "error")
+        return redirect(url_for('signup'))
+
+    # 🔒 Password Match Check
     if password != confirm_password:
         flash("Passwords do not match!", "error")
+        return redirect(url_for('signup'))
+
+    # 🔒 Password Strength Validation
+    if len(password) < 8:
+        flash("Password must be at least 8 characters long!", "error")
+        return redirect(url_for('signup'))
+
+    if not re.search(r"[A-Z]", password):
+        flash("Password must contain at least one uppercase letter!", "error")
+        return redirect(url_for('signup'))
+
+    if not re.search(r"[a-z]", password):
+        flash("Password must contain at least one lowercase letter!", "error")
+        return redirect(url_for('signup'))
+
+    if not re.search(r"[0-9]", password):
+        flash("Password must contain at least one number!", "error")
+        return redirect(url_for('signup'))
+
+    if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", password):
+        flash("Password must contain at least one special character!", "error")
         return redirect(url_for('signup'))
 
     hashed_password = generate_password_hash(password)
     
     conn, cursor = get_db_connection()
     try:
-        # Check if email already exists
         cursor.execute("SELECT * FROM user WHERE email=%s", (email,))
         if cursor.fetchone():
             flash("Email already registered!", "error")
             return redirect(url_for('signup'))
 
-        # Insert new user (Note: using execute with a standard tuple, not dictionary)
-        cursor = conn.cursor() # Get a standard cursor to access lastrowid easily
+        cursor = conn.cursor()
         cursor.execute(
             "INSERT INTO user (fullname, email, password) VALUES (%s, %s, %s)",
             (fullname, email, hashed_password)
         )
         user_id = cursor.lastrowid
 
-        # Generate wallet id and create wallet
         wallet_id = generate_wallet_id(cursor)
         cursor.execute(
             "INSERT INTO wallet (wallet_id, user_id, balance) VALUES (%s, %s, %s)",
