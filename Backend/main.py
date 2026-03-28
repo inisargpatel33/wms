@@ -9,6 +9,9 @@ from datetime import datetime, timedelta
 import razorpay
 import os
 
+from flask_mail import Mail, Message
+
+
 
 # test key
 RAZORPAY_KEY_ID = "rzp_test_SRa3Cn60azMF5E"
@@ -38,6 +41,13 @@ app = Flask(__name__,
 # )
 app.secret_key = "supersecretkey"
 
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = 'eventmanagementsys01@gmail.com'
+app.config['MAIL_PASSWORD'] = 'nuazzwirnwjwydba'  # ⚠️ Not your real password
+
+mail = Mail(app)
 # --- DATABASE CONFIGURATION ---
 db_config = {
     "host": "localhost",
@@ -108,7 +118,7 @@ def signup():
     # The signup page is always simply rendered.
     return render_template("/signup.html")
 
-import re
+
 
 @app.route('/register', methods=['POST'])
 def register():
@@ -182,6 +192,69 @@ def register():
         cursor.close()
         conn.close()
         
+
+@app.route('/forgot-password')
+def forgot_password_page():
+    return render_template('forget.html')
+#forget password
+@app.route('/send-otp', methods=['POST'])
+def send_otp():
+    data = request.get_json()
+    email = data.get('email')
+
+    conn, cursor = get_db_connection()
+    cursor.execute("SELECT * FROM user WHERE email=%s", (email,))
+    if not cursor.fetchone():
+        return {"status": "error", "message": "Email not registered"}
+
+    otp = str(random.randint(100000, 999999))
+
+    session['reset_email'] = email
+    session['otp'] = otp
+
+    msg = Message('OTP Verification',
+                  sender=app.config['MAIL_USERNAME'],
+                  recipients=[email])
+    msg.body = f"Your OTP is: {otp}"
+    mail.send(msg)
+
+    return {"status": "success", "message": "OTP sent"}
+
+@app.route('/verify-otp', methods=['POST'])
+def verify_otp():
+    data = request.get_json()
+    user_otp = data.get('otp')
+
+    if user_otp == session.get('otp'):
+        session['otp_verified'] = True
+        return {"status": "success", "message": "OTP verified"}
+    else:
+        return {"status": "error", "message": "Invalid OTP"}
+    
+@app.route('/reset-password', methods=['POST'])
+def reset_password():
+    if not session.get('otp_verified'):
+        return {"status": "error", "message": "Unauthorized"}
+
+    data = request.get_json()
+    password = data.get('password')
+    confirm = data.get('confirm')
+
+    if password != confirm:
+        return {"status": "error", "message": "Passwords do not match"}
+
+    hashed_password = generate_password_hash(password)
+    email = session.get('reset_email')
+
+    conn, cursor = get_db_connection()
+    cursor.execute("UPDATE user SET password=%s WHERE email=%s",
+                   (hashed_password, email))
+    conn.commit()
+
+    # Clear session
+    session.clear()
+
+    return {"status": "success", "message": "Password reset successful"}
   # ==========================================
 # DASHBOARD PAGE
 # ==========================================

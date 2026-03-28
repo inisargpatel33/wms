@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WMS – Login</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='landing/style.css') }}" />
+</head>
+
+<body>
+
+  <header class="header">
+    <div class="logo">
+      <img src="{{ url_for('static', filename='img/wallet.svg') }}" alt="">
+      <span>WMS</span>
+    </div>
+<a href="{{ url_for('index') }}" class="launch-btn">HOME</a>
+  </header>
+
+   <main class="features-section">
+  <h1 class="features-title">Reset Your Password</h1>
+
+  <div class="auth-card">
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          {% set text_color = '#28a745' if category == 'success' else '#dc3545' %}
+          {% set bg_color = '#e6ffe6' if category == 'success' else '#ffe6e6' %}
+          <p style="text-align:center;
+                    margin-bottom:15px;
+                    font-weight:bold;
+                    color: {{ text_color }};
+                    background-color: {{ bg_color }};
+                    border: 1px solid {{ text_color }};
+                    padding: 10px;
+                    border-radius: 8px;">
+            {{ message }}
+          </p>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <!-- STEP 1 -->
+<div id="step1">
+  <div class="auth-field">
+    <label>Email</label>
+    <input type="email" id="email" required>
+  </div>
+
+  <div style="text-align:center;">
+    <button id="sendBtn" type="button" class="primary auth-btn" onclick="sendOTP()">
+      Send OTP
+    </button>
+  </div>
+</div>
+
+<!-- STEP 2 -->
+<div id="step2" style="display:none;">
+  <div class="auth-field">
+    <label>Enter OTP</label>
+    <input type="text" id="otp">
+  </div>
+
+  <div style="text-align:center;">
+    <button id="verifyBtn" type="button" class="primary auth-btn" onclick="verifyOTP()">
+      Verify OTP
+    </button>
+  </div>
+</div>
+
+<!-- STEP 3 -->
+<div id="step3" style="display:none;">
+  <div class="auth-field">
+    <label>New Password</label>
+    <input type="password" id="password">
+  </div>
+
+  <div class="auth-field">
+    <label>Confirm Password</label>
+    <input type="password" id="confirm">
+  </div>
+
+  <div style="text-align:center;">
+    <button type="button" class="primary auth-btn" onclick="resetPassword()">
+      Reset Password
+    </button>
+  </div>
+</div>
+
+  </div>
+</main>
+<script>
+function sendOTP() {
+    let email = document.getElementById("email").value;
+
+    fetch("/send-otp", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({email: email})
+    })
+    .then(res => res.json())
+    .then(data => {
+        alert(data.message);
+
+        if (data.status === "success") {
+            // ❗ Hide Send OTP button
+            document.getElementById("sendBtn").style.display = "none";
+
+            // ❗ Show OTP section
+            document.getElementById("step2").style.display = "block";
+        }
+    });
+}
+
+function verifyOTP() {
+    let otp = document.getElementById("otp").value;
+
+    fetch("/verify-otp", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({otp: otp})
+    })
+    .then(res => res.json())
+    .then(data => {
+        alert(data.message);
+
+        if (data.status === "success") {
+            // ❗ Hide Verify OTP button
+            document.getElementById("verifyBtn").style.display = "none";
+
+            // ❗ Show Password section
+            document.getElementById("step3").style.display = "block";
+        }
+    });
+}
+
+function resetPassword() {
+    let password = document.getElementById("password").value;
+    let confirm = document.getElementById("confirm").value;
+
+    fetch("/reset-password", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+            password: password,
+            confirm: confirm
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        alert(data.message);
+        if (data.status === "success") {
+            window.location.href = "/login";
+        }
+    });
+}
+</script>
+
+    </div>
+  </main>
+
+</body>
+</html>
