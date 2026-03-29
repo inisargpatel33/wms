@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SWM Transaction Kanban</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        /* Keep all your beautiful Kanban CSS here */
+        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f0f2f5; color: #333; padding: 20px; }
+        .container { background-color: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .header-title { text-align: center; color: #1e3a5f; font-size: 28px; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 30px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 30px; font-size: 12px; }
+        th { background-color: #2c4a63; color: white; padding: 12px 8px; text-align: center; border: 1px solid #1e3a5f; }
+        td { padding: 10px 8px; text-align: center; border: 1px solid #e2e8f0; font-weight: 500; }
+        tr:nth-child(even) td { background-color: #f8fafc; }
+        .highlight-col {/* Styling for money leaving the wallet (Red Box) */
+.impact-outflow { 
+    background-color: #ffe4e6 !important; 
+    color: #be123c; 
+    font-weight: bold; 
+}
+
+/* Styling for money entering the wallet (Green Box) */
+.impact-inflow { 
+    background-color: #dcfce7 !important; 
+    color: #166534; 
+    font-weight: bold; 
+} }
+        .inflow { color: #16a34a; font-weight: bold; }
+        .outflow { color: #dc2626; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div id="pdf-content" class="container">
+        
+        <div class="header-title">Transaction History SWM</div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Timeframe</th>
+                    <th>Total Transactions</th>
+                    <th>Total Inflow (₹)</th>
+                    <th>Total Outflow (₹)</th>
+                    <th>Net Balance Change (₹)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ timeframe_label }}</td>
+                    <td>{{ summary.total_count }}</td>
+                    <td class="inflow">+{{ "{:,.2f}".format(summary.total_inflow) }}</td>
+                    <td class="outflow">-{{ "{:,.2f}".format(summary.total_outflow) }}</td>
+                    <td style="font-weight: bold; font-size: 14px;">{{ "{:,.2f}".format(summary.net_change) }}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Date & Time</th>
+                    <th>Wallet / Source</th>
+                    <th>Transaction Type</th>
+                    <th>Impact Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for tx in transactions %}
+                <tr>
+                    <td>{{ tx.timestamp }}</td>
+                    <td>{{ tx.wallet_name }}</td>
+                    <td>{{ tx.transaction_type }}</td>
+                    <td style="font-weight: bold; {% if tx.transaction_type == 'Payment' %}background-color: #ffe4e6; color: #be123c;{% else %}background-color: #dcfce7; color: #166534;{% endif %}">
+    
+    {% if tx.transaction_type == 'Payment' %}
+        -₹{{ "{:,.2f}".format(tx.amount) }}
+    {% else %}
+        +₹{{ "{:,.2f}".format(tx.amount) }}
+    {% endif %}
+
+</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+   <script>
+    window.onload = function() {
+        const element = document.getElementById('pdf-content');
+        const dateStr = new Date().toISOString().split('T')[0];
+        
+        const opt = {
+            margin:       0.5,
+            filename:     `SWM_Transection_${dateStr}.pdf`,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { 
+                scale: 2, 
+                useCORS: true, // Helps if you have any icons or fonts loading
+                scrollY: 0     // Prevents blank pages if the user scrolled down
+            }, 
+            jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+        };
+
+        // DELAY 1: Give the browser 800 milliseconds to render the HTML visually
+        setTimeout(() => {
+            html2pdf().set(opt).from(element).save().then(() => {
+                
+                // DELAY 2: Give the browser's download manager 500ms to grab the file before redirecting
+                setTimeout(() => {
+                    window.location.href = "/history"; 
+                }, 500);
+                
+            });
+        }, 800);
+    };
+</script>
+</body>
+</html>

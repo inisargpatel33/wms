@@ -1,10 +1,14 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
+from flask import Flask, render_template, request, Response,redirect, url_for, session, flash, jsonify
 from werkzeug.security import check_password_hash, generate_password_hash
 from email_service import send_swm_email, get_burn_rate_template, get_goal_completed_template
 import mysql.connector
+import csv
 import random
+import io
 import math
 from datetime import datetime, timedelta
+
+
 
 import razorpay
 import os
@@ -539,7 +543,7 @@ def delete_sub_wallet(sub_id):
             # Delete the sub-wallet
             cursor.execute("DELETE FROM sub_wallet WHERE id=%s", (sub_id,))
 
-            # ✅ NEW: Log the refund in Transaction History
+            # Log the refund in Transaction History
             if refund_amount > 0:
                 cursor.execute(
                     "INSERT INTO transactions (user_id, amount, wallet_name, transaction_type) VALUES (%s, %s, %s, %s)",
@@ -1409,6 +1413,64 @@ def verify_goal_payment():
 
 
         
+# Remove 'from weasyprint import HTML' from the top of your file!
+
+# 1. DELETE the WeasyPrint import at the top of your file!
+
+@app.route('/download_ledger', methods=['GET'])
+def download_ledger():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    timeframe = request.args.get('timeframe', 'all')
+    user_id = session['user_id']
+    
+    conn, cursor = get_db_connection()
+    try:
+        # Determine the SQL Query
+        base_query = "SELECT timestamp, wallet_name, transaction_type, amount FROM transactions WHERE user_id = %s"
+        params = [user_id]
+        timeframe_label = "All Time"
+        
+        if timeframe == '1m':
+            base_query += " AND timestamp >= NOW() - INTERVAL 1 MONTH"
+            timeframe_label = "Last 30 Days"
+        elif timeframe == '12m':
+            base_query += " AND timestamp >= NOW() - INTERVAL 1 YEAR"
+            timeframe_label = "Last 12 Months"
+            
+        base_query += " ORDER BY timestamp DESC"
+        
+        cursor.execute(base_query, tuple(params))
+        transactions = cursor.fetchall()
+        
+        # Calculate Kanban Summary Data
+        total_inflow = sum(float(tx['amount']) for tx in transactions if tx['transaction_type'] != 'Payment')
+        total_outflow = sum(float(tx['amount']) for tx in transactions if tx['transaction_type'] == 'Payment')
+        
+        summary = {
+            "total_count": len(transactions),
+            "total_inflow": total_inflow,
+            "total_outflow": total_outflow,
+            "net_change": total_inflow - total_outflow
+        }
+        
+    except Exception as e:
+        print("Ledger Download Error:", e)
+        return "An error occurred while generating your ledger.", 500
+    finally:
+        if 'cursor' in locals():
+            cursor.close()
+            conn.close()
+
+    # 2. Just render the template directly. The frontend will do the PDF magic.
+    return render_template(
+        'pdf.html', 
+        transactions=transactions, 
+        summary=summary, 
+        timeframe_label=timeframe_label
+    )  
+
         
 @app.route('/logout')
 def logout():
