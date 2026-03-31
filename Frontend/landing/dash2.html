@@ -248,7 +248,7 @@
   </a>
 </div>
 
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+  <!-- <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
     {% if sub_wallets %}
       {% for sw in sub_wallets %}
       <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
@@ -301,7 +301,38 @@
       </div>
       {% endfor %}
     {% endif %}
-  </div>
+  </div> -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                <div class="bg-white p-5 md:p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow group flex flex-col justify-between">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="size-12 md:size-14 rounded-xl bg-purple-50 flex items-center justify-center text-primary-purple group-hover:scale-110 transition-transform shrink-0">
+                            <span class="material-symbols-outlined text-2xl md:text-3xl">account_balance_wallet</span>
+                        </div>
+                        <div>
+                            <h3 class="text-slate-500 text-xs md:text-sm font-bold uppercase tracking-wider mb-0.5">Main Wallet</h3>
+                            <p class="text-2xl md:text-3xl font-black text-dark-purple leading-none">₹{{ "{:,.2f}".format(wallet.balance) if wallet else "0.00" }}</p>
+                        </div>
+                    </div>
+                    <p class="text-slate-400 text-xs font-medium">Unallocated funds</p>
+                </div>
+                
+                {% if sub_wallets %}
+                    {% for sw in sub_wallets %}
+                    <div class="bg-white p-5 md:p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow group flex flex-col justify-between">
+                        <div class="flex items-center gap-4 mb-4">
+                            <div class="size-12 md:size-14 rounded-xl bg-blue-50 flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform shrink-0">
+                                <span class="material-symbols-outlined text-2xl md:text-3xl">folder</span>
+                            </div>
+                            <div>
+                                <h3 class="text-slate-500 text-xs md:text-sm font-bold uppercase tracking-wider mb-0.5">{{ sw.name }}</h3>
+                                <p class="text-2xl md:text-3xl font-black text-slate-900 leading-none">₹{{ "{:,.2f}".format(sw.balance) }}</p>
+                            </div>
+                        </div>
+                        <p class="text-slate-400 text-xs font-medium">Custom Envelope</p>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
 </div>
 
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">

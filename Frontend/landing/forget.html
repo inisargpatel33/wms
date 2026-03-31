@@ -3,10 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>WMS – Login</title>
+  <title>WMS – Forgot Password</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='landing/style.css') }}" />
 </head>
-
 <body>
 
   <header class="header">
@@ -14,152 +13,266 @@
       <img src="{{ url_for('static', filename='img/wallet.svg') }}" alt="">
       <span>WMS</span>
     </div>
-<a href="{{ url_for('index') }}" class="launch-btn">HOME</a>
+    <a href="{{ url_for('index') }}" class="launch-btn">HOME</a>
   </header>
 
-   <main class="features-section">
-  <h1 class="features-title">Reset Your Password</h1>
+  <main class="features-section">
+    <h1 class="features-title">Reset Password</h1>
 
-  <div class="auth-card">
+    <div class="auth-card">
 
-    <!-- Flash Messages -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        {% for category, message in messages %}
-          {% set text_color = '#28a745' if category == 'success' else '#dc3545' %}
-          {% set bg_color = '#e6ffe6' if category == 'success' else '#ffe6e6' %}
-          <p style="text-align:center;
-                    margin-bottom:15px;
-                    font-weight:bold;
-                    color: {{ text_color }};
-                    background-color: {{ bg_color }};
-                    border: 1px solid {{ text_color }};
-                    padding: 10px;
-                    border-radius: 8px;">
-            {{ message }}
-          </p>
-        {% endfor %}
-      {% endif %}
-    {% endwith %}
+      <p id="custom-alert" style="display: none; text-align:center; margin-bottom:15px; font-weight:bold; padding: 10px; border-radius: 8px; border: 1px solid;"></p>
 
-    <!-- STEP 1 -->
-<div id="step1">
-  <div class="auth-field">
-    <label>Email</label>
-    <input type="email" id="email" required>
-  </div>
+      <div id="step-email">
+        <div class="auth-field">
+          <label>Enter your registered Email</label>
+          <input id="email-input" type="email" required />
+        </div>
+        <div style="display:flex; justify-content:center; margin-top:12px;">
+          <button onclick="sendOTP()" class="primary auth-btn" id="btn-send">Send OTP</button>
+        </div>
+      </div>
 
-  <div style="text-align:center;">
-    <button id="sendBtn" type="button" class="primary auth-btn" onclick="sendOTP()">
-      Send OTP
-    </button>
-  </div>
-</div>
+      <div id="step-otp" style="display: none;">
+        <div class="auth-field">
+          <label>Enter 6-digit OTP</label>
+          <input id="otp-input" type="text" maxlength="6" required />
+        </div>
+        <div style="display:flex; justify-content:center; margin-top:12px;">
+          <button onclick="verifyOTP()" class="primary auth-btn" id="btn-verify">Verify OTP</button>
+        </div>
+      </div>
 
-<!-- STEP 2 -->
-<div id="step2" style="display:none;">
-  <div class="auth-field">
-    <label>Enter OTP</label>
-    <input type="text" id="otp">
-  </div>
 
-  <div style="text-align:center;">
-    <button id="verifyBtn" type="button" class="primary auth-btn" onclick="verifyOTP()">
-      Verify OTP
-    </button>
-  </div>
-</div>
 
-<!-- STEP 3 -->
-<div id="step3" style="display:none;">
-  <div class="auth-field">
-    <label>New Password</label>
-    <input type="password" id="password">
-  </div>
+      <div id="step-otp" style="display: none;">
+        <div class="auth-field">
+          <label>Enter 6-digit OTP</label>
+          <input id="otp-input" type="text" maxlength="6" required autocomplete="off" />
+        </div>
+        <div style="display:flex; justify-content:center; margin-top:12px;">
+          <button onclick="verifyOTP()" class="primary auth-btn" id="btn-verify">Verify OTP</button>
+        </div>
+      </div>
 
-  <div class="auth-field">
-    <label>Confirm Password</label>
-    <input type="password" id="confirm">
-  </div>
+      <div id="step-reset" style="display: none;">
+        <div class="auth-field">
+          <label>New Password</label>
+          <input id="new-password" type="password" required onkeyup="validatePassword()" />
+          <small id="pass-strength" style="display: none; margin-top: 4px; font-weight: bold;"></small>
+        </div>
+        
+        <div class="auth-field">
+          <label>Confirm Password</label>
+          <input id="confirm-password" type="password" required onkeyup="validatePassword()" />
+          <small id="pass-match" style="font-size: 12px; display: block; margin-top: 4px; font-weight: bold;"></small>
+        </div>
+        
+        <div style="display:flex; justify-content:center; margin-top:12px;">
+          <button onclick="resetPassword()" class="primary auth-btn" id="btn-reset" disabled style="opacity: 0.5; cursor: not-allowed;">Update Password</button>
+        </div>
+      </div>
 
-  <div style="text-align:center;">
-    <button type="button" class="primary auth-btn" onclick="resetPassword()">
-      Reset Password
-    </button>
-  </div>
-</div>
 
-  </div>
-</main>
-<script>
-function sendOTP() {
-    let email = document.getElementById("email").value;
-
-    fetch("/send-otp", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({email: email})
-    })
-    .then(res => res.json())
-    .then(data => {
-        alert(data.message);
-
-        if (data.status === "success") {
-            // ❗ Hide Send OTP button
-            document.getElementById("sendBtn").style.display = "none";
-
-            // ❗ Show OTP section
-            document.getElementById("step2").style.display = "block";
-        }
-    });
-}
-
-function verifyOTP() {
-    let otp = document.getElementById("otp").value;
-
-    fetch("/verify-otp", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({otp: otp})
-    })
-    .then(res => res.json())
-    .then(data => {
-        alert(data.message);
-
-        if (data.status === "success") {
-            // ❗ Hide Verify OTP button
-            document.getElementById("verifyBtn").style.display = "none";
-
-            // ❗ Show Password section
-            document.getElementById("step3").style.display = "block";
-        }
-    });
-}
-
-function resetPassword() {
-    let password = document.getElementById("password").value;
-    let confirm = document.getElementById("confirm").value;
-
-    fetch("/reset-password", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({
-            password: password,
-            confirm: confirm
-        })
-    })
-    .then(res => res.json())
-    .then(data => {
-        alert(data.message);
-        if (data.status === "success") {
-            window.location.href = "/login";
-        }
-    });
-}
-</script>
+      
+      <div style="display:flex; justify-content:center; margin-top:20px;">
+        <a href="{{ url_for('login') }}" class="secondary" style="padding:10px 20px; border-radius:8px; text-decoration:none;">Back to Login</a>
+      </div>
 
     </div>
   </main>
 
+  <script>
+    // --- Custom Notification UI ---
+    function showMessage(message, type) {
+      const alertBox = document.getElementById('custom-alert');
+      alertBox.innerText = message;
+      alertBox.style.display = 'block';
+
+      if (type === 'success') {
+        alertBox.style.color = '#28a745';
+        alertBox.style.backgroundColor = '#e6ffe6';
+        alertBox.style.borderColor = '#28a745';
+      } else {
+        alertBox.style.color = '#dc3545';
+        alertBox.style.backgroundColor = '#ffe6e6';
+        alertBox.style.borderColor = '#dc3545';
+      }
+
+      // Hide the message automatically after 4 seconds
+      setTimeout(() => {
+        alertBox.style.display = 'none';
+      }, 4000);
+    }
+
+    // --- Step 1: Send OTP ---
+    async function sendOTP() {
+      const email = document.getElementById('email-input').value;
+      const btn = document.getElementById('btn-send');
+      
+      if (!email) return showMessage('Please enter an email.', 'error');
+      
+      btn.innerText = 'Sending...';
+      btn.disabled = true;
+
+      try {
+        const response = await fetch('/send-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: email })
+        });
+        const data = await response.json();
+
+        if (data.status === 'success') {
+          showMessage(data.message, 'success');
+          
+          // CLEAR THE OTP FIELD BEFORE SHOWING IT
+          document.getElementById('otp-input').value = ''; 
+          
+          document.getElementById('step-email').style.display = 'none';
+          document.getElementById('step-otp').style.display = 'block';
+        } else {
+          showMessage(data.message, 'error');
+        }
+      } catch (err) {
+        showMessage('Server error. Please try again.', 'error');
+      } finally {
+        btn.innerText = 'Send OTP';
+        btn.disabled = false;
+      }
+    }
+
+    // --- Step 2: Verify OTP ---
+    async function verifyOTP() {
+      const otp = document.getElementById('otp-input').value;
+      const btn = document.getElementById('btn-verify');
+
+      if (!otp) return showMessage('Please enter the OTP.', 'error');
+
+      btn.innerText = 'Verifying...';
+      btn.disabled = true;
+
+      try {
+        const response = await fetch('/verify-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ otp: otp })
+        });
+        const data = await response.json();
+
+        if (data.status === 'success') {
+          showMessage(data.message, 'success');
+          document.getElementById('step-otp').style.display = 'none';
+          document.getElementById('step-reset').style.display = 'block';
+        } else {
+          showMessage(data.message, 'error');
+        }
+      } catch (err) {
+        showMessage('Server error. Please try again.', 'error');
+      } finally {
+        btn.innerText = 'Verify OTP';
+        btn.disabled = false;
+      }
+    }
+
+// --- Real-time Password Validation ---
+   // --- Real-time Smart Password Validation ---
+    function validatePassword() {
+      const pass = document.getElementById('new-password').value;
+      const confirm = document.getElementById('confirm-password').value;
+      const btn = document.getElementById('btn-reset');
+      const matchText = document.getElementById('pass-match');
+      const strengthText = document.getElementById('pass-strength');
+
+      // The Rules
+      const isLengthValid = pass.length >= 8;
+      const hasNumber = /\d/.test(pass); // Checks for at least one digit
+      const hasSymbol = /[!@#$%^&*(),.?":{}|<>]/.test(pass); // Checks for special chars
+      
+      const isPassValid = isLengthValid && hasNumber && hasSymbol;
+      let isMatchValid = false;
+
+      // 1. Evaluate Password Strength
+      if (pass.length === 0) {
+        strengthText.style.display = 'none'; // Hide if empty
+      } else if (!isPassValid) {
+        // Show exactly what the user is missing
+        strengthText.style.display = 'block';
+        strengthText.style.color = '#dc3545'; // Red
+        strengthText.style.fontSize = '12px';
+        
+        let errors = [];
+        if (!isLengthValid) errors.push("8+ characters");
+        if (!hasNumber) errors.push("a number");
+        if (!hasSymbol) errors.push("a symbol");
+        
+        strengthText.innerText = "Needs: " + errors.join(", ");
+      } else {
+        // Password meets all rules
+        strengthText.style.display = 'block';
+        strengthText.style.color = '#28a745'; // Green
+        strengthText.innerText = '✓ Strong password';
+      }
+
+      // 2. Check if Passwords Match
+      if (confirm.length === 0) {
+        matchText.innerText = '';
+      } else if (pass === confirm) {
+        matchText.innerText = '✓ Passwords match';
+        matchText.style.color = '#28a745'; // Green
+        isMatchValid = true;
+      } else {
+        matchText.innerText = '✗ Passwords do not match';
+        matchText.style.color = '#dc3545'; // Red
+      }
+
+      // 3. Enable Submit Button ONLY if everything is perfect
+      if (isPassValid && isMatchValid) {
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        btn.style.cursor = 'pointer';
+      } else {
+        btn.disabled = true;
+        btn.style.opacity = '0.5';
+        btn.style.cursor = 'not-allowed';
+      }
+    }
+
+    // --- Step 3: Reset Password ---
+    async function resetPassword() {
+      const pass = document.getElementById('new-password').value;
+      const confirm = document.getElementById('confirm-password').value;
+      const btn = document.getElementById('btn-reset');
+
+      if (!pass || !confirm) return showMessage('Please fill all fields.', 'error');
+      if (pass !== confirm) return showMessage('Passwords do not match.', 'error');
+
+      btn.innerText = 'Updating...';
+      btn.disabled = true;
+
+      try {
+        const response = await fetch('/reset-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: pass, confirm: confirm })
+        });
+        const data = await response.json();
+
+        if (data.status === 'success') {
+          showMessage('Password updated! Redirecting to login...', 'success');
+          setTimeout(() => {
+            window.location.href = "{{ url_for('login') }}";
+          }, 2000);
+        } else {
+          showMessage(data.message, 'error');
+        }
+      } catch (err) {
+        showMessage('Server error. Please try again.', 'error');
+      } finally {
+        btn.innerText = 'Update Password';
+        btn.disabled = false;
+      }
+    }
+  </script>
 </body>
 </html>

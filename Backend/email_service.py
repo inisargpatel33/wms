@@ -1,29 +1,34 @@
 import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+from email.message import EmailMessage # 🚀 THE FIX: Python's modern email engine
 
 # Replace these with your actual details
 SENDER_EMAIL = "eventmanagementsys01@gmail.com"
 APP_PASSWORD = "nuazzwirnwjwydba"  # Use an app password for Gmail
 
 def send_swm_email(to_email, subject, html_content):
-    msg = MIMEMultipart("alternative")
+    msg = EmailMessage()
     msg['Subject'] = subject
     msg['From'] = f"SWM Alerts <{SENDER_EMAIL}>"
     msg['To'] = to_email
 
-    part = MIMEText(html_content, 'html')
-    msg.attach(part)
+    # We add the HTML directly. EmailMessage handles all the UTF-8 math automatically!
+    msg.set_content("Please enable HTML to view this message.") # Fallback for old phones
+    msg.add_alternative(html_content, subtype='html')
 
     try:
         with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
             server.login(SENDER_EMAIL, APP_PASSWORD)
-            server.sendmail(SENDER_EMAIL, to_email, msg.as_string())
+            # 🚀 IMPORTANT: We use send_message instead of sendmail
+            server.send_message(msg) 
         print(f"Email successfully sent to {to_email}")
         return True
     except Exception as e:
         print(f"Failed to send email: {e}")
         return False
+
+# ... (Keep your get_burn_rate_template and get_goal_completed_template exactly as they are below this!)
+
+
 
 def get_burn_rate_template(user_name, wallet_name, burn_rate, days_left):
     return f"""
