@@ -14,11 +14,11 @@
       <img src="{{ url_for('static', filename='img/wallet.svg') }}" alt="">
       <span>WMS</span>
     </div>
-<a href="{{ url_for('index') }}" class="launch-btn">HOME</a>
+    <a href="{{ url_for('index') }}" class="launch-btn">HOME</a>
   </header>
 
   <main class="features-section">
-    <h1 class="features-title">Welcome back</h1>
+    <h1 id="welcomeTitle" class="features-title">Welcome back</h1>
 
     <div class="auth-card">
 
@@ -41,7 +41,19 @@
         {% endif %}
       {% endwith %}
 
+      <div style="display: flex; background: #f1f5f9; padding: 6px; border-radius: 10px; margin-bottom: 24px;">
+        <button type="button" id="btnUser" onclick="setLoginType('user')" 
+                style="flex: 1; padding: 10px; border: none; background: #ffffff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-radius: 6px; font-weight: bold; color: #1e293b; cursor: pointer; transition: all 0.3s ease;">
+            User
+        </button>
+        <button type="button" id="btnAdmin" onclick="setLoginType('admin')" 
+                style="flex: 1; padding: 10px; border: none; background: transparent; border-radius: 6px; font-weight: bold; color: #64748b; cursor: pointer; transition: all 0.3s ease;">
+            Admin
+        </button>
+      </div>
+
       <form action="{{ url_for('login') }}" method="POST">
+        <input type="hidden" name="login_type" id="login_type" value="user">
 
         <div class="auth-field">
           <label>Email</label>
@@ -54,17 +66,20 @@
         </div>
 
         <div style="display:flex;gap:12px;align-items:center;justify-content:center;margin-top:12px;">
-          <button type="submit" class="primary auth-btn">Login</button>
+          <button type="submit" id="submitBtn" class="primary auth-btn">Login</button>
         </div>
 
       </form>
 
-      <div style="display:flex;gap:12px;align-items:center;justify-content:center;margin-top:12px;">
+      <div style="display:flex;gap:12px;align-items:center;justify-content:center;margin-top:12px; min-height: 40px;">
+        
         <a href="{{ url_for('signup') }}"
+           id="signupLink"
            class="secondary"
-           style="padding:10px 20px;border-radius:8px;text-decoration:none;">
+           style="padding:10px 20px;border-radius:8px;text-decoration:none; transition: opacity 0.3s ease;">
           Create Account
         </a>
+        
         <a href="{{ url_for('forgot_password_page') }}"
            class="secondary"
            style="padding:10px 20px;border-radius:8px;text-decoration:none;">Forget Password</a>
@@ -72,6 +87,55 @@
 
     </div>
   </main>
+
+  <script>
+    function setLoginType(type) {
+        document.getElementById('login_type').value = type;
+        
+        const btnUser = document.getElementById('btnUser');
+        const btnAdmin = document.getElementById('btnAdmin');
+        const title = document.getElementById('welcomeTitle');
+        const submitBtn = document.getElementById('submitBtn');
+        const signupLink = document.getElementById('signupLink');
+
+        if (type === 'admin') {
+            // Admin Styling (Dark Mode switch)
+            btnAdmin.style.background = '#1e293b'; 
+            btnAdmin.style.color = '#ffffff';
+            btnAdmin.style.boxShadow = '0 1px 3px rgba(0,0,0,0.2)';
+
+            btnUser.style.background = 'transparent';
+            btnUser.style.color = '#64748b';
+            btnUser.style.boxShadow = 'none';
+
+            title.innerText = "Admin Portal";
+            submitBtn.innerText = "Enter Command Center";
+            submitBtn.style.backgroundColor = "#1e293b"; // Darken the submit button
+            submitBtn.style.borderColor = "#1e293b";
+
+            // Hide the Create Account button
+            signupLink.style.display = "none";
+
+        } else {
+            // Normal User Styling (Light Mode switch)
+            btnUser.style.background = '#ffffff';
+            btnUser.style.color = '#1e293b';
+            btnUser.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+
+            btnAdmin.style.background = 'transparent';
+            btnAdmin.style.color = '#64748b';
+            btnAdmin.style.boxShadow = 'none';
+
+            title.innerText = "Welcome back";
+            submitBtn.innerText = "Login";
+            submitBtn.style.backgroundColor = ""; // Resets to your CSS file's default color
+            submitBtn.style.borderColor = "";
+
+            // Show the Create Account button
+            signupLink.style.display = "block";
+        }
+    }
+  </script>
 
 </body>
 </html>

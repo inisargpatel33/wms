@@ -25,8 +25,6 @@
 <style>
     body { font-family: 'Inter', sans-serif; }
     .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
-
-    /* Add this inside your <style> tag at the top */
     .hide-scrollbar::-webkit-scrollbar { display: none; }
     .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 </style>
@@ -49,7 +47,6 @@
             <a href="/wallets" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-dark-purple transition-colors">
                 <span class="material-symbols-outlined">account_balance_wallet</span><span class="text-sm font-medium">Wallets</span>
             </a>
-           
             <a href="/history" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-dark-purple transition-colors">
                 <span class="material-symbols-outlined">receipt_long</span><span class="text-sm font-medium">History</span>
             </a>
@@ -60,9 +57,7 @@
     </div>
 </aside>
 
-
 <main class="flex-1 flex flex-col overflow-y-auto pb-20 lg:pb-0">
-    
     <header class="flex items-center justify-between border-b border-slate-200 py-4 sticky top-0 bg-white/80 backdrop-blur-md z-10 px-4 lg:px-8">
         <div class="flex items-center gap-2">
             <span class="material-symbols-outlined text-primary-purple text-3xl">analytics</span>
@@ -72,7 +67,6 @@
 
     <div class="p-4 md:p-8 max-w-7xl mx-auto space-y-6 md:space-y-8 w-full">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-            
             <div class="bg-white p-4 md:p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-3 md:gap-4 overflow-hidden">
                 <div class="size-10 md:size-14 rounded-full bg-purple-50 flex items-center justify-center text-primary-purple shrink-0">
                     <span class="material-symbols-outlined text-xl md:text-3xl">account_balance</span>
@@ -82,6 +76,7 @@
                     <h3 class="text-lg md:text-2xl lg:text-3xl font-black text-slate-900 truncate tracking-tight">₹{{ "{:,.2f}".format(net_worth) }}</h3>
                 </div>
             </div>
+            
             <div class="bg-white p-4 md:p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-3 md:gap-4 overflow-hidden">
                 <div class="size-10 md:size-14 rounded-full bg-red-50 flex items-center justify-center text-red-500 shrink-0">
                     <span class="material-symbols-outlined text-xl md:text-3xl">trending_down</span>
@@ -89,7 +84,6 @@
                 <div class="min-w-0 flex-1">
                     <p class="text-slate-500 text-[10px] md:text-xs font-bold uppercase tracking-wider mb-0.5 md:mb-1 truncate">Total Spent (All-Time)</p>
                     <h3 class="text-lg md:text-2xl lg:text-3xl font-black text-slate-900 truncate tracking-tight">₹{{ "{:,.2f}".format(total_spent) }}</h3>
-                    
                     {% if spent_trend.dir == 'down' %}
                         <p class="text-green-600 text-[10px] md:text-xs font-bold mt-1 flex items-center gap-0.5"><span class="material-symbols-outlined text-[14px]">trending_down</span> {{ "{:.0f}".format(spent_trend.pct) }}% vs last month</p>
                     {% elif spent_trend.dir == 'up' %}
@@ -107,7 +101,6 @@
                 <div class="min-w-0 flex-1">
                     <p class="text-slate-500 text-[10px] md:text-xs font-bold uppercase tracking-wider mb-0.5 md:mb-1 truncate">Total Saved (All-Time)</p>
                     <h3 class="text-lg md:text-2xl lg:text-3xl font-black text-slate-900 truncate tracking-tight">₹{{ "{:,.2f}".format(auto_saved) }}</h3>
-                    
                     {% if saved_trend.dir == 'up' %}
                         <p class="text-green-600 text-[10px] md:text-xs font-bold mt-1 flex items-center gap-0.5"><span class="material-symbols-outlined text-[14px]">trending_up</span> {{ "{:.0f}".format(saved_trend.pct) }}% vs last month</p>
                     {% elif saved_trend.dir == 'down' %}
@@ -117,94 +110,123 @@
                     {% endif %}
                 </div>
             </div>
-            
         </div>
 
-
-
-
-<div class="mb-6 md:mb-8">
-    <div class="flex items-center justify-between mb-4">
-        <h3 class="text-slate-900 font-bold text-lg flex items-center gap-2">
-            <span class="material-symbols-outlined text-primary-purple">health_and_safety</span>
-            Financial Health Check
-        </h3>
-        
-        {% if envelope_health|length > 0 %}
-        <button onclick="document.getElementById('healthModal').classList.remove('hidden')" class="text-sm font-bold text-primary-purple hover:text-dark-purple transition-colors bg-purple-50 px-3 py-1.5 rounded-lg flex items-center gap-1">
-            View All <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
-        </button>
-        {% endif %}
-    </div>
-    
-    {% if envelope_health %}
-        <div class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-2 hide-scrollbar">
-        {% for env in envelope_health %}
+        <div class="mb-6 md:mb-8">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-slate-900 font-bold text-lg flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary-purple">health_and_safety</span>
+                    Financial Health Check
+                </h3>
+                {% if envelope_health|length > 0 %}
+                <button onclick="document.getElementById('healthModal').classList.remove('hidden')" class="text-sm font-bold text-primary-purple hover:text-dark-purple transition-colors bg-purple-50 px-3 py-1.5 rounded-lg flex items-center gap-1">
+                    View All <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+                </button>
+                {% endif %}
+            </div>
             
-            <div class="min-w-[85%] md:min-w-[350px] shrink-0 snap-start">
-            {% if env.status == 'warning' or env.status == 'critical' %}
-                <div class="bg-orange-50 border border-orange-200 p-4 rounded-2xl flex items-start gap-4 shadow-sm h-full">
-                    <div class="size-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-500 shrink-0 mt-0.5">
-                        <span class="material-symbols-outlined text-xl">warning</span>
+            {% if envelope_health %}
+                <div class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-2 hide-scrollbar">
+                {% for env in envelope_health %}
+                    <div class="min-w-[85%] md:min-w-[350px] shrink-0 snap-start">
+                    {% if env.status == 'warning' or env.status == 'critical' %}
+                        <div class="bg-orange-50 border border-orange-200 p-4 rounded-2xl flex items-start gap-4 shadow-sm h-full">
+                            <div class="size-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-500 shrink-0 mt-0.5"><span class="material-symbols-outlined text-xl">warning</span></div>
+                            <div>
+                                <h4 class="text-orange-800 font-bold text-sm mb-1 uppercase tracking-wider">High Burn Rate: {{ env.name }}</h4>
+                                <p class="text-orange-600 text-xs md:text-sm leading-relaxed font-medium">Spending <span class="font-black text-orange-700">₹{{ "{:,.0f}".format(env.burn_rate) }}/day</span>. Empty in <span class="font-black text-orange-700">{{ env.days_left }} days</span>.</p>
+                            </div>
+                        </div>
+                    {% elif env.status == 'healthy' %}
+                        <div class="bg-green-50 border border-green-200 p-4 rounded-2xl flex items-start gap-4 shadow-sm h-full">
+                            <div class="size-10 rounded-full bg-green-100 flex items-center justify-center text-green-500 shrink-0 mt-0.5"><span class="material-symbols-outlined text-xl">check_circle</span></div>
+                            <div>
+                                <h4 class="text-green-800 font-bold text-sm mb-1 uppercase tracking-wider">Healthy: {{ env.name }}</h4>
+                                <p class="text-green-600 text-xs md:text-sm leading-relaxed font-medium">Spending <span class="font-black text-green-700">₹{{ "{:,.0f}".format(env.burn_rate) }}/day</span>. Lasts for <span class="font-black text-green-700">{{ env.days_left }} days</span>.</p>
+                            </div>
+                        </div>
+                    {% elif env.status == 'moderate' %}
+                        <div class="bg-yellow-50 border border-yellow-200 p-4 rounded-2xl flex items-start gap-4 shadow-sm h-full">
+                            <div class="size-10 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-600 shrink-0 mt-0.5"><span class="material-symbols-outlined text-xl">schedule</span></div>
+                            <div>
+                                <h4 class="text-yellow-800 font-bold text-sm mb-1 uppercase tracking-wider">Moderate: {{ env.name }}</h4>
+                                <p class="text-yellow-700 text-xs md:text-sm leading-relaxed font-medium">Spending <span class="font-black text-yellow-800">₹{{ "{:,.0f}".format(env.burn_rate) }}/day</span>. <span class="font-black text-yellow-800">{{ env.days_left }} days</span> left.</p>
+                            </div>
+                        </div>
+                    {% elif env.status == 'untouched' %}
+                        <div class="bg-blue-50 border border-blue-200 p-4 rounded-2xl flex items-start gap-4 shadow-sm h-full">
+                            <div class="size-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-500 shrink-0 mt-0.5"><span class="material-symbols-outlined text-xl">savings</span></div>
+                            <div>
+                                <h4 class="text-blue-800 font-bold text-sm mb-1 uppercase tracking-wider">Untouched: {{ env.name }}</h4>
+                                <p class="text-blue-600 text-xs md:text-sm leading-relaxed font-medium">Safely sitting on <span class="font-black text-blue-700">₹{{ "{:,.0f}".format(env.balance) }}</span>.</p>
+                            </div>
+                        </div>
+                    {% endif %}
                     </div>
-                    <div>
-                        <h4 class="text-orange-800 font-bold text-sm mb-1 uppercase tracking-wider">High Burn Rate: {{ env.name }}</h4>
-                        <p class="text-orange-600 text-xs md:text-sm leading-relaxed font-medium">
-                            Spending <span class="font-black text-orange-700">₹{{ "{:,.0f}".format(env.burn_rate) }}/day</span>. Empty in <span class="font-black text-orange-700">{{ env.days_left }} days</span>.
-                        </p>
-                    </div>
+                {% endfor %}
                 </div>
-            {% elif env.status == 'healthy' %}
-                <div class="bg-green-50 border border-green-200 p-4 rounded-2xl flex items-start gap-4 shadow-sm h-full">
-                    <div class="size-10 rounded-full bg-green-100 flex items-center justify-center text-green-500 shrink-0 mt-0.5">
-                        <span class="material-symbols-outlined text-xl">check_circle</span>
+            {% else %}
+                <div class="bg-slate-50 border border-slate-200 p-4 rounded-2xl flex items-center gap-4 shadow-sm">
+                    <div class="size-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 shrink-0">
+                        <span class="material-symbols-outlined text-xl">account_balance_wallet</span>
                     </div>
                     <div>
-                        <h4 class="text-green-800 font-bold text-sm mb-1 uppercase tracking-wider">Healthy: {{ env.name }}</h4>
-                        <p class="text-green-600 text-xs md:text-sm leading-relaxed font-medium">
-                            Spending <span class="font-black text-green-700">₹{{ "{:,.0f}".format(env.burn_rate) }}/day</span>. Lasts for <span class="font-black text-green-700">{{ env.days_left }} days</span>.
-                        </p>
-                    </div>
-                </div>
-            {% elif env.status == 'moderate' %}
-                <div class="bg-yellow-50 border border-yellow-200 p-4 rounded-2xl flex items-start gap-4 shadow-sm h-full">
-                    <div class="size-10 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-600 shrink-0 mt-0.5">
-                        <span class="material-symbols-outlined text-xl">schedule</span>
-                    </div>
-                    <div>
-                        <h4 class="text-yellow-800 font-bold text-sm mb-1 uppercase tracking-wider">Moderate: {{ env.name }}</h4>
-                        <p class="text-yellow-700 text-xs md:text-sm leading-relaxed font-medium">
-                            Spending <span class="font-black text-yellow-800">₹{{ "{:,.0f}".format(env.burn_rate) }}/day</span>. <span class="font-black text-yellow-800">{{ env.days_left }} days</span> left.
-                        </p>
-                    </div>
-                </div>
-            {% elif env.status == 'untouched' %}
-                <div class="bg-blue-50 border border-blue-200 p-4 rounded-2xl flex items-start gap-4 shadow-sm h-full">
-                    <div class="size-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-500 shrink-0 mt-0.5">
-                        <span class="material-symbols-outlined text-xl">savings</span>
-                    </div>
-                    <div>
-                        <h4 class="text-blue-800 font-bold text-sm mb-1 uppercase tracking-wider">Untouched: {{ env.name }}</h4>
-                        <p class="text-blue-600 text-xs md:text-sm leading-relaxed font-medium">
-                            Safely sitting on <span class="font-black text-blue-700">₹{{ "{:,.0f}".format(env.balance) }}</span>.
-                        </p>
+                        <h4 class="text-slate-800 font-bold text-sm mb-0.5 uppercase tracking-wider">No Envelope Data Yet</h4>
+                        <p class="text-slate-600 text-xs md:text-sm font-medium">Start spending from your sub-wallets to see analytics here.</p>
                     </div>
                 </div>
             {% endif %}
-            </div>
-        {% endfor %}
         </div>
-    {% else %}
-        <div class="bg-slate-50 border border-slate-200 p-4 rounded-2xl flex items-center gap-4 shadow-sm">
-            <div class="size-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 shrink-0">
-                <span class="material-symbols-outlined text-xl">account_balance_wallet</span>
+
+        <div class="flex flex-col gap-6 md:gap-8">
+            
+            <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col w-full">
+                <div class="flex justify-between items-start mb-6">
+                    <div>
+                        <h3 class="text-slate-900 font-bold text-lg mb-1">Spending Breakdown</h3>
+                        <p class="text-slate-500 text-sm">Which wallets you spend from the most.</p>
+                    </div>
+                    <div class="relative shrink-0">
+                        <select id="timeframe-select" class="bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold rounded-xl pl-4 pr-10 py-2.5 focus:bg-white focus:ring-2 focus:ring-purple-100 focus:border-primary-purple appearance-none cursor-pointer transition-all hover:border-slate-300 outline-none shadow-sm">
+                            <option value="1">Last 24 Hours</option> 
+                            <option value="7">Last 7 Days</option>
+                            <option value="30" selected>Last 30 Days</option>
+                        </select>
+                        <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" style="font-size: 18px;">expand_more</span>
+                    </div>
+                </div>
+                <div class="relative flex-1 flex items-center justify-center min-h-[300px]">
+                    <canvas id="expenseChart"></canvas>
+                </div>
             </div>
-            <div>
-                <h4 class="text-slate-800 font-bold text-sm mb-0.5 uppercase tracking-wider">No Envelope Data Yet</h4>
-                <p class="text-slate-600 text-xs md:text-sm font-medium">Start spending from your sub-wallets to see analytics here.</p>
-            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
+                <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col h-full">
+                    <h3 class="text-slate-900 font-bold text-lg mb-1">Asset Allocation</h3>
+                    <p class="text-slate-500 text-sm mb-6">Where your money is currently sitting.</p>
+                    <div class="relative flex-1 flex items-center justify-center min-h-[250px]">
+                        <canvas id="assetChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col h-full">
+    <h3 class="text-slate-900 font-bold text-lg mb-1">Active Sub-Wallets</h3>
+    <p class="text-slate-500 text-sm mb-6">Money distributed across your custom envelopes.</p>
+    
+    <div class="relative flex-1 flex items-center justify-center min-h-[250px]">
+        <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pb-10">
+            <span class="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Total</span>
+            <span class="text-slate-900 font-black text-2xl tracking-tight" id="subwallet-total-text">₹0</span>
         </div>
-    {% endif %}
+        
+        <canvas id="subwalletChart"></canvas>
+    </div>
+</div>
+            </div>
+
+        </div>
+    </div>
+</main>
 </div>
 
 <div id="healthModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4 transition-all">
@@ -217,141 +239,44 @@
                 <span class="material-symbols-outlined text-[20px]">close</span>
             </button>
         </div>
-        
         <div class="p-5 overflow-y-auto flex flex-col gap-3">
         {% for env in envelope_health %}
-            {% if env.status == 'warning' or env.status == 'critical' %}
-                <div class="bg-orange-50 border border-orange-200 p-4 rounded-2xl flex items-center justify-between gap-4">
-                    <div class="flex items-center gap-3">
-                        <div class="size-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-500 shrink-0">
-                            <span class="material-symbols-outlined text-xl">warning</span>
-                        </div>
-                        <div>
-                            <h4 class="text-orange-800 font-bold text-sm uppercase tracking-wider">{{ env.name }}</h4>
-                            <p class="text-orange-600 text-xs font-medium">{{ env.days_left }} days left</p>
-                        </div>
-                    </div>
-                    <div class="text-right">
-                        <p class="text-orange-800 font-black text-sm">₹{{ "{:,.0f}".format(env.burn_rate) }}/day</p>
+            <div class="border border-slate-200 p-4 rounded-2xl flex items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <div>
+                        <h4 class="text-slate-800 font-bold text-sm uppercase tracking-wider">{{ env.name }}</h4>
+                        <p class="text-slate-500 text-xs font-medium">{{ env.status | capitalize }} - {{ env.days_left if env.days_left else 'No limit' }} days left</p>
                     </div>
                 </div>
-            {% elif env.status == 'healthy' %}
-                <div class="bg-green-50 border border-green-200 p-4 rounded-2xl flex items-center justify-between gap-4">
-                    <div class="flex items-center gap-3">
-                        <div class="size-10 rounded-full bg-green-100 flex items-center justify-center text-green-500 shrink-0">
-                            <span class="material-symbols-outlined text-xl">check_circle</span>
-                        </div>
-                        <div>
-                            <h4 class="text-green-800 font-bold text-sm uppercase tracking-wider">{{ env.name }}</h4>
-                            <p class="text-green-600 text-xs font-medium">{{ env.days_left }} days left</p>
-                        </div>
-                    </div>
-                    <div class="text-right">
-                        <p class="text-green-800 font-black text-sm">₹{{ "{:,.0f}".format(env.burn_rate) }}/day</p>
-                    </div>
+                <div class="text-right">
+                    <p class="text-slate-800 font-black text-sm">₹{{ "{:,.0f}".format(env.burn_rate) if env.burn_rate else env.balance }}</p>
                 </div>
-            {% elif env.status == 'moderate' %}
-                <div class="bg-yellow-50 border border-yellow-200 p-4 rounded-2xl flex items-center justify-between gap-4">
-                    <div class="flex items-center gap-3">
-                        <div class="size-10 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-600 shrink-0">
-                            <span class="material-symbols-outlined text-xl">schedule</span>
-                        </div>
-                        <div>
-                            <h4 class="text-yellow-800 font-bold text-sm uppercase tracking-wider">{{ env.name }}</h4>
-                            <p class="text-yellow-700 text-xs font-medium">{{ env.days_left }} days left</p>
-                        </div>
-                    </div>
-                    <div class="text-right">
-                        <p class="text-yellow-800 font-black text-sm">₹{{ "{:,.0f}".format(env.burn_rate) }}/day</p>
-                    </div>
-                </div>
-            {% elif env.status == 'untouched' %}
-                <div class="bg-blue-50 border border-blue-200 p-4 rounded-2xl flex items-center justify-between gap-4">
-                    <div class="flex items-center gap-3">
-                        <div class="size-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-500 shrink-0">
-                            <span class="material-symbols-outlined text-xl">savings</span>
-                        </div>
-                        <div>
-                            <h4 class="text-blue-800 font-bold text-sm uppercase tracking-wider">{{ env.name }}</h4>
-                            <p class="text-blue-600 text-xs font-medium">No spending</p>
-                        </div>
-                    </div>
-                    <div class="text-right">
-                        <p class="text-blue-800 font-black text-sm">₹{{ "{:,.0f}".format(env.balance) }}</p>
-                    </div>
-                </div>
-            {% endif %}
+            </div>
         {% endfor %}
         </div>
     </div>
 </div>
 
-
-
-
-
-
-
-
-
-
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
-            
-            <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col h-full">
-                <h3 class="text-slate-900 font-bold text-lg mb-1">Asset Allocation</h3>
-                <p class="text-slate-500 text-sm mb-6">Where your money is currently sitting.</p>
-                <div class="relative flex-1 flex items-center justify-center min-h-[250px]">
-                    <canvas id="assetChart"></canvas>
-                </div>
-            </div>
-
-          <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col h-full">
-                
-                <div class="flex justify-between items-start mb-6">
-                    <div>
-                        <h3 class="text-slate-900 font-bold text-lg mb-1">Spending Breakdown</h3>
-                        <p class="text-slate-500 text-sm">Which wallets you spend from the most.</p>
-                    </div>
-                    
-                    <div class="relative shrink-0">
-                        <select id="timeframe-select" class="bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold rounded-xl pl-4 pr-10 py-2.5 focus:bg-white focus:ring-2 focus:ring-purple-100 focus:border-primary-purple appearance-none cursor-pointer transition-all hover:border-slate-300 outline-none shadow-sm">
-    <option value="1">Last 24 Hours</option> <option value="7">Last 7 Days</option>
-    <option value="30" selected>Last 30 Days</option>
-</select>
-                        <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" style="font-size: 18px;">expand_more</span>
-                    </div>
-                </div>
-
-                <div class="relative flex-1 flex items-center justify-center min-h-[250px]">
-                    <canvas id="expenseChart"></canvas>
-                </div>
-            </div>
-
-        </div>
-    </div>
-</main>
-</div>
-
 <nav class="lg:hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-slate-200 flex items-center justify-between px-4 sm:px-6 py-3 z-[100] shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.05)]">
     <a href="/dashboard" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors"><span class="material-symbols-outlined text-2xl">home</span><span class="text-[10px] font-bold">Home</span></a>
-    
     <a href="/analysis" class="flex flex-col items-center gap-1 text-primary-purple">
         <span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">pie_chart</span>
         <span class="text-[10px] font-black tracking-wider">Analysis</span>
     </a>
-    
     <a href="/wallets" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors"><span class="material-symbols-outlined text-2xl">account_balance_wallet</span><span class="text-[10px] font-bold">Wallets</span></a>
     <a href="/profile" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors"><span class="material-symbols-outlined text-2xl">person</span><span class="text-[10px] font-bold">Profile</span></a>
-<a href="#" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer" onclick="document.getElementById('viewAllModal').classList.remove('hidden')">
+    <a href="#" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer" onclick="document.getElementById('viewAllModal').classList.remove('hidden')">
         <span class="material-symbols-outlined text-2xl">receipt_long</span>
         <span class="text-[10px] font-bold">History</span>
-    </a></nav>
+    </a>
+</nav>
 
-<script>// Grab the data passed from Python
+<script>
+    // Grab the data passed from Python
     const chartData = {{ chart_data | tojson | safe }};
 
     // ----------------------------------------------------
-    // 1. ASSET ALLOCATION DONUT CHART (Goals Removed)
+    // 1. ASSET ALLOCATION DONUT CHART
     // ----------------------------------------------------
     const assetCtx = document.getElementById('assetChart').getContext('2d');
     new Chart(assetCtx, {
@@ -360,10 +285,7 @@
             labels: chartData.assets_labels,
             datasets: [{
                 data: chartData.assets_values,
-                backgroundColor: [
-                    '#4c1d95', // Main Wallet (Dark Purple)
-                    '#a855f7'  // Sub-Wallets (Primary Purple)
-                ],
+                backgroundColor: ['#4c1d95', '#a855f7'],
                 borderWidth: 0,
                 hoverOffset: 4
             }]
@@ -374,18 +296,16 @@
             plugins: {
                 legend: { position: 'bottom', labels: { font: { family: 'Inter', weight: 'bold' }, padding: 20 } }
             },
-            cutout: '75%' // Thinner, more elegant ring
+            cutout: '75%' 
         }
     });
 
-  // ----------------------------------------------------
-    // 2. EXPENSE BREAKDOWN BAR CHART (Safe Version)
+    // ----------------------------------------------------
+    // 2. EXPENSE BREAKDOWN BAR CHART (FULL WIDTH NOW)
     // ----------------------------------------------------
     const expenseCtx = document.getElementById('expenseChart').getContext('2d');
     
-    // THE FIX: Added " || [] " so if Python forgets the flags, JS doesn't crash!
     const safeFlags = chartData.expense_deleted_flags || []; 
-
     const activeBg = '#a855f7';       
     const activeHover = '#9333ea';    
     const deletedBg = '#f8fafc';      
@@ -413,28 +333,27 @@
                 maxBarThickness: 45 
             }]
         },
-        // ... (Keep your existing options block here!)
         options: {
             responsive: true,
             maintainAspectRatio: false,
             interaction: {
                 mode: 'index',
-                intersect: false, // UX FIX: User doesn't have to hover perfectly on the bar to see the tooltip
+                intersect: false,
             },
             plugins: {
                 legend: { display: false },
                 tooltip: {
-                    backgroundColor: '#1e293b', // Dark Slate tooltip
+                    backgroundColor: '#1e293b', 
                     titleFont: { size: 12, family: 'Inter', weight: '600' },
                     bodyFont: { size: 14, family: 'Inter', weight: 'bold' },
                     padding: 12,
                     cornerRadius: 8,
-                    displayColors: false, // Removes the distracting little colored square in the tooltip
+                    displayColors: false, 
                     callbacks: {
                         title: function(context) {
                             let index = context[0].dataIndex;
                             let label = context[0].label;
-                            if (chartData.expense_deleted_flags[index]) {
+                            if (chartData.expense_deleted_flags && chartData.expense_deleted_flags[index]) {
                                 return label + ' (Deleted)';
                             }
                             return label;
@@ -448,33 +367,91 @@
             scales: {
                 y: { 
                     beginAtZero: true, 
-                    grid: { 
-                        color: '#f1f5f9', // Very subtle background lines
-                        drawBorder: false 
-                    },
+                    grid: { color: '#f1f5f9', drawBorder: false },
                     ticks: {
                         font: { family: 'Inter', size: 11 },
                         color: '#64748b',
                         callback: function(value) {
-                            // UX FIX: Formats 1000 to "1k" to keep the axis clean
                             if (value >= 1000) return '₹' + (value/1000) + 'k';
                             return '₹' + value;
                         }
                     }
                 },
                 x: { 
-                    grid: { display: false }, // Removes vertical grid lines for a cleaner look
-                    ticks: {
-                        font: { family: 'Inter', size: 12, weight: '500' },
-                        color: '#475569'
+                    grid: { display: false }, 
+                    ticks: { font: { family: 'Inter', size: 12, weight: '500' }, color: '#475569' }
+                }
+            }
+        }
+    });
+
+   // ----------------------------------------------------
+    // 3. ACTIVE SUB-WALLETS DONUT CHART (FIXED ALLOCATION)
+    // ----------------------------------------------------
+    const subCtx = document.getElementById('subwalletChart').getContext('2d');
+    
+    // 1. Use Jinja to dynamically build arrays of individual sub-wallets
+    let individualSubLabels = [];
+    let individualSubValues = [];
+    let subTotal = 0;
+
+    {% if sub_wallets %}
+        {% for sw in sub_wallets %}
+            individualSubLabels.push("{{ sw.name }}");
+            individualSubValues.push({{ sw.balance | float }});
+            subTotal += {{ sw.balance | float }};
+        {% endfor %}
+    {% endif %}
+
+    // 2. Fallback if the user has no sub-wallets yet
+    const hasSubWallets = individualSubLabels.length > 0;
+    if (!hasSubWallets) {
+        individualSubLabels = ["No Sub-wallets"];
+        individualSubValues = [1]; 
+    }
+    
+    const subColors = hasSubWallets 
+        ? ['#4c1d95', '#7c3aed', '#a855f7', '#c084fc', '#ddd6fe', '#ede9fe', '#f3e8ff']
+        : ['#e2e8f0']; // Grey out if empty
+
+    // 3. Inject the accurate total into the HTML span in the center
+    document.getElementById('subwallet-total-text').innerText = '₹' + subTotal.toLocaleString();
+
+    new Chart(subCtx, {
+        type: 'doughnut', 
+        data: {
+            labels: individualSubLabels,
+            datasets: [{
+                data: individualSubValues,
+                backgroundColor: subColors,
+                borderWidth: 0,
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '75%', 
+            plugins: {
+                legend: { position: 'bottom', labels: { font: { family: 'Inter', weight: 'bold' }, padding: 15 } },
+                tooltip: {
+                    backgroundColor: '#1e293b',
+                    titleFont: { family: 'Inter', weight: '600' },
+                    bodyFont: { family: 'Inter', weight: 'bold', size: 14 },
+                    padding: 12,
+                    cornerRadius: 8,
+                    callbacks: {
+                        label: function(context) {
+                            if (!hasSubWallets) return " No data yet";
+                            return ' ' + context.label + ': ₹' + context.raw.toLocaleString();
+                        }
                     }
                 }
             }
         }
     });
 
-
-    // Make the Dropdown change the URL
+    // Timeframe Dropdown Logic
     const timeframeSelect = document.getElementById('timeframe-select');
     if (timeframeSelect) {
         timeframeSelect.addEventListener('change', function() {
@@ -482,14 +459,12 @@
             window.location.href = `/analysis?days=${selectedDays}`;
         });
 
-        // Keep the dropdown showing the correct selection after page reload
         const urlParams = new URLSearchParams(window.location.search);
         const currentDays = urlParams.get('days');
         if (currentDays) {
             timeframeSelect.value = currentDays;
         }
     }
-
 </script>
 
 </body>

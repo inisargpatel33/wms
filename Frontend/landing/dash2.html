@@ -37,6 +37,12 @@
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 font-display min-h-screen">
+    {% if global_alert %}
+    <div style="background-color: #ef4444; color: white; padding: 12px 20px; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: bold; text-align: center; width: 100%; z-index: 9999; position: relative;">
+        <span class="material-symbols-outlined">campaign</span>
+        <span>{{ global_alert }}</span>
+    </div>
+    {% endif %}
 <div class="flex h-screen overflow-hidden">
 <aside class="w-64 border-r border-slate-200 bg-slate-50 flex flex-col shrink-0 hidden lg:flex">
     <div class="p-6 flex flex-col gap-8 h-full">
@@ -66,6 +72,7 @@
 </aside>
 
 <main class="flex-1 flex flex-col overflow-y-auto">
+
 <header class="flex items-center justify-between border-b border-slate-200 py-4 sticky top-0 bg-white/80 backdrop-blur-md z-10 px-4 lg:px-8">
 <div class="flex items-center gap-2">
     <span class="material-symbols-outlined text-primary text-3xl">account_balance</span>
@@ -469,6 +476,10 @@
           </select>
         </div>
       </div>
+      <div id="payment-error-alert" class="hidden mb-4 p-3 bg-red-50 text-red-700 border border-red-200 rounded-xl text-sm font-bold flex items-center gap-2 transition-all">
+    <span class="material-symbols-outlined text-red-500">error</span>
+    <span id="payment-error-text">Insufficient balance!</span>
+</div>
       <button type="submit" id="rzp-button" class="w-full bg-slate-900 text-white font-black py-5 rounded-[1.5rem] hover:bg-black transition-all shadow-xl shadow-slate-200 mt-4 flex justify-center items-center gap-3 cursor-pointer">
         <span class="material-symbols-outlined text-sm">lock</span> Pay via Razorpay
       </button>
@@ -489,6 +500,10 @@ document.getElementById('razorpay-payment-form').onsubmit = async function(e) {
     const amount = document.getElementById('pay-amount').value;
     const wallet_source = document.getElementById('pay-wallet-source').value;
     const submitBtn = document.getElementById('rzp-button');
+    
+    // 1. Hide the error box every time they click pay (to reset it)
+    document.getElementById('payment-error-alert').classList.add('hidden');
+
     submitBtn.innerHTML = "Processing...";
     submitBtn.disabled = true;
 
@@ -500,13 +515,20 @@ document.getElementById('razorpay-payment-form').onsubmit = async function(e) {
         });
         const data = await response.json();
 
-        if (data.error) {
-            alert(data.error);
-            submitBtn.innerHTML = "Pay via Razorpay";
+        // 2. The Bouncer Catcher! Check for backend errors here.
+        if (data.error || !response.ok) {
+            // Put the Python error text into the HTML span
+            document.getElementById('payment-error-text').innerText = data.error || "Payment failed to initialize.";
+            // Unhide the red warning box
+            document.getElementById('payment-error-alert').classList.remove('hidden');
+            
+            // Reset button and STOP the function
+            submitBtn.innerHTML = '<span class="material-symbols-outlined text-sm">lock</span> Pay via Razorpay';
             submitBtn.disabled = false;
             return;
         }
 
+        // 3. If no error, continue opening Razorpay normally
         var options = {
             "key": data.key, 
             "amount": data.amount * 100,
@@ -525,13 +547,18 @@ document.getElementById('razorpay-payment-form').onsubmit = async function(e) {
         };
 
         var rzp1 = new Razorpay(options);
-        rzp1.on('payment.failed', function (response){ alert("Payment Failed."); });
+        rzp1.on('payment.failed', function (response){ 
+            // Show Razorpay failures in the custom HTML alert box too!
+            document.getElementById('payment-error-text').innerText = "Payment Failed.";
+            document.getElementById('payment-error-alert').classList.remove('hidden');
+        });
         rzp1.open();
     } catch (error) {
         console.error("Error:", error);
-        alert("Something went wrong initializing the payment.");
+        document.getElementById('payment-error-text').innerText = "Something went wrong initializing the payment.";
+        document.getElementById('payment-error-alert').classList.remove('hidden');
     } finally {
-        submitBtn.innerHTML = `Pay via Razorpay`;
+        submitBtn.innerHTML = '<span class="material-symbols-outlined text-sm">lock</span> Pay via Razorpay';
         submitBtn.disabled = false;
     }
 };

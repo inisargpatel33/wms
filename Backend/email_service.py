@@ -1,117 +1,163 @@
+import os
 import smtplib
-from email.message import EmailMessage # 🚀 THE FIX: Python's modern email engine
+import logging
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
-# Replace these with your actual details
-SENDER_EMAIL = "eventmanagementsys01@gmail.com"
-APP_PASSWORD = "nuazzwirnwjwydba"  # Use an app password for Gmail
+logger = logging.getLogger(__name__)
+if not logger.handlers:
+    logging.basicConfig(level=logging.INFO)
 
-def send_swm_email(to_email, subject, html_content):
-    msg = EmailMessage()
-    msg['Subject'] = subject
-    msg['From'] = f"SWM Alerts <{SENDER_EMAIL}>"
-    msg['To'] = to_email
+# ---------------------------------------------------------------------------
+# CONFIGURATION
+# Try to load from .env file if it exists, otherwise fall back to hardcoded
+# ---------------------------------------------------------------------------
+def _load_env():
+    env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.env')
+    config = {}
+    if os.path.exists(env_path):
+        with open(env_path, 'r') as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith('#') and '=' in line:
+                    key, _, value = line.partition('=')
+                    config[key.strip()] = value.strip()
+    return config
 
-    # We add the HTML directly. EmailMessage handles all the UTF-8 math automatically!
-    msg.set_content("Please enable HTML to view this message.") # Fallback for old phones
-    msg.add_alternative(html_content, subtype='html')
+_env = _load_env()
 
-    try:
-        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
-            server.login(SENDER_EMAIL, APP_PASSWORD)
-            # 🚀 IMPORTANT: We use send_message instead of sendmail
-            server.send_message(msg) 
-        print(f"Email successfully sent to {to_email}")
-        return True
-    except Exception as e:
-        print(f"Failed to send email: {e}")
+MAIL_USERNAME = _env.get('MAIL_USERNAME', 'eventmanagementsys01@gmail.com')
+MAIL_PASSWORD = _env.get('MAIL_PASSWORD', 'nuazzwirnwjwydba')  # fallback to hardcoded
+MAIL_SERVER   = _env.get('MAIL_SERVER', 'smtp.gmail.com')
+MAIL_PORT     = int(_env.get('MAIL_PORT', 587))
+
+if not MAIL_PASSWORD:
+    print("WARNING: MAIL_PASSWORD not found in .env file. Emails will not send.")
+
+
+# ---------------------------------------------------------------------------
+# CORE SEND FUNCTION
+# ---------------------------------------------------------------------------
+def send_swm_email(to_email: str, subject: str, html_content: str) -> bool:
+    """
+    Send an HTML email via Gmail SMTP.
+    Returns True on success, False on failure.
+    Never raises — so a failed email never crashes a payment route.
+    """
+    if not MAIL_PASSWORD:
+        print("WARNING: Skipping email send — no MAIL_PASSWORD configured.")
         return False
 
-# ... (Keep your get_burn_rate_template and get_goal_completed_template exactly as they are below this!)
+    try:
+        msg = MIMEMultipart('alternative')
+        msg['Subject'] = subject
+        msg['From']    = MAIL_USERNAME
+        msg['To']      = to_email
+
+        part = MIMEText(html_content, 'html', 'utf-8')
+        msg.attach(part)
+
+        with smtplib.SMTP(MAIL_SERVER, MAIL_PORT) as server:
+            server.ehlo()
+            server.starttls()
+            server.login(MAIL_USERNAME, MAIL_PASSWORD)
+            server.sendmail(MAIL_USERNAME, to_email, msg.as_string())
+
+        logger.info("Email sent successfully to %s", to_email)
+        return True
+
+    except smtplib.SMTPAuthenticationError:
+        logger.error("Gmail authentication failed. Check your App Password.")
+        return False
+    except smtplib.SMTPException as e:
+        logger.error("SMTP error while sending email: %s", e)
+        return False
+    except OSError as e:
+        logger.error("OS error while sending email (possibly console I/O issue): %s", e)
+        return False
+    except Exception as e:
+        logger.exception("Unexpected error while sending email")
+        return False
 
 
-
-def get_burn_rate_template(user_name, wallet_name, burn_rate, days_left):
+# ---------------------------------------------------------------------------
+# EMAIL TEMPLATES
+# ---------------------------------------------------------------------------
+def get_burn_rate_template(user_name: str, wallet_name: str, burn_rate: float, days_left: int) -> str:
     return f"""
     <!DOCTYPE html>
     <html>
     <head>
+        <meta charset="UTF-8">
         <style>
-            body {{ font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f8fafc; margin: 0; padding: 0; }}
-            .container {{ max-width: 600px; margin: 40px auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #f1f5f9; }}
-            .header {{ background-color: #fff7ed; padding: 30px; text-align: center; border-bottom: 2px solid #fed7aa; }}
-            .header h1 {{ color: #c2410c; margin: 0; font-size: 24px; }}
-            .content {{ padding: 30px; color: #334155; line-height: 1.6; font-size: 16px; }}
-            .alert-box {{ background-color: #fef2f2; border-left: 4px solid #ef4444; padding: 15px 20px; border-radius: 0 8px 8px 0; margin: 20px 0; font-weight: bold; color: #991b1b; }}
-            .footer {{ background-color: #f8fafc; padding: 20px; text-align: center; font-size: 13px; color: #94a3b8; border-top: 1px solid #e2e8f0; }}
-            .btn {{ display: inline-block; background-color: #c2410c; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 20px; }}
+            body {{ font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 20px; }}
+            .container {{ max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }}
+            .header {{ background: linear-gradient(135deg, #ff6b35, #f7c59f); padding: 30px; text-align: center; }}
+            .header h1 {{ color: white; margin: 0; font-size: 28px; }}
+            .body {{ padding: 30px; }}
+            .body p {{ color: #555; line-height: 1.6; font-size: 15px; }}
+            .stat-box {{ background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; padding: 15px 20px; margin: 20px 0; }}
+            .stat-box p {{ margin: 5px 0; color: #856404; font-weight: bold; }}
+            .footer {{ background: #f8f9fa; padding: 20px; text-align: center; color: #aaa; font-size: 12px; }}
         </style>
     </head>
     <body>
         <div class="container">
             <div class="header">
-                <h1>⚠️ High Spend Alert</h1>
+                <h1>High Spend Alert</h1>
             </div>
-            <div class="content">
-                <p>Hi {user_name},</p>
-                <p>Your SWM financial health monitor has detected a high burn rate in one of your envelopes.</p>
-                
-                <div class="alert-box">
-                    Sub-Wallet: {wallet_name}<br>
-                    Current Burn Rate: ₹{burn_rate:,.0f} / day<br>
-                    Estimated Depletion: {days_left} days
+            <div class="body">
+                <p>Hi <strong>{user_name}</strong>,</p>
+                <p>Your <strong>{wallet_name}</strong> envelope is burning through funds faster than expected.</p>
+                <div class="stat-box">
+                    <p>Daily Burn Rate: Rs.{burn_rate:.2f} / day</p>
+                    <p>Estimated Days Remaining: {days_left} days</p>
                 </div>
-                
-                <p>At your current spending pace, this wallet will be completely empty soon. We recommend reviewing your recent transactions and slowing down your spending in this category.</p>
-                
-                
+                <p>Consider reducing your spending or adding more funds to this envelope to avoid running out.</p>
             </div>
             <div class="footer">
-                You are receiving this because you enabled automated insights in SWM.
+                <p>This is an automated alert from Smart Wallet Manager (SWM).</p>
             </div>
         </div>
     </body>
     </html>
     """
 
-def get_goal_completed_template(user_name, goal_name, total_saved):
+
+def get_goal_completed_template(user_name: str, goal_name: str, total_saved: float) -> str:
     return f"""
     <!DOCTYPE html>
     <html>
     <head>
+        <meta charset="UTF-8">
         <style>
-            body {{ font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f8fafc; margin: 0; padding: 0; }}
-            .container {{ max-width: 600px; margin: 40px auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #f1f5f9; }}
-            .header {{ background-color: #f0fdf4; padding: 30px; text-align: center; border-bottom: 2px solid #bbf7d0; }}
-            .header h1 {{ color: #15803d; margin: 0; font-size: 28px; }}
-            .content {{ padding: 30px; color: #334155; line-height: 1.6; font-size: 16px; text-align: center; }}
-            .highlight-box {{ background-color: #faf5ff; border: 2px dashed #a855f7; padding: 25px; border-radius: 12px; margin: 25px 0; }}
-            .highlight-box h2 {{ margin: 0 0 10px 0; color: #4c1d95; font-size: 22px; }}
-            .amount {{ font-size: 32px; font-weight: 900; color: #a855f7; margin: 0; }}
-            .footer {{ background-color: #f8fafc; padding: 20px; text-align: center; font-size: 13px; color: #94a3b8; border-top: 1px solid #e2e8f0; }}
-            .btn {{ display: inline-block; background-color: #a855f7; color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; margin-top: 10px; }}
+            body {{ font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 20px; }}
+            .container {{ max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }}
+            .header {{ background: linear-gradient(135deg, #6a11cb, #2575fc); padding: 30px; text-align: center; }}
+            .header h1 {{ color: white; margin: 0; font-size: 28px; }}
+            .body {{ padding: 30px; }}
+            .body p {{ color: #555; line-height: 1.6; font-size: 15px; }}
+            .stat-box {{ background: #d4edda; border: 1px solid #28a745; border-radius: 8px; padding: 15px 20px; margin: 20px 0; }}
+            .stat-box p {{ margin: 5px 0; color: #155724; font-weight: bold; font-size: 18px; }}
+            .footer {{ background: #f8f9fa; padding: 20px; text-align: center; color: #aaa; font-size: 12px; }}
         </style>
     </head>
     <body>
         <div class="container">
             <div class="header">
-                <h1>🎉 Congratulations! 🎉</h1>
+                <h1>Goal Achieved!</h1>
             </div>
-            <div class="content">
-                <p>Hi {user_name},</p>
-                <p>You did it! Your dedication and smart financial planning have paid off.</p>
-                
-                <div class="highlight-box">
-                    <h2>{goal_name}</h2>
-                    <p style="margin: 0; color: #6b7280; text-transform: uppercase; font-size: 12px; font-weight: bold;">Fully Funded</p>
-                    <p class="amount">₹{total_saved:,.0f}</p>
+            <div class="body">
+                <p>Congratulations <strong>{user_name}</strong>!</p>
+                <p>You have successfully completed your savings goal.</p>
+                <div class="stat-box">
+                    <p>Goal: {goal_name}</p>
+                    <p>Total Saved: Rs.{total_saved:,.2f}</p>
                 </div>
-                
-                <p>Whether you're picking up the keys today or just securing the funds for the future, you should be incredibly proud of hitting this milestone.</p>
-                
-                
+                <p>Keep up the great work and set your next goal to continue building your financial future!</p>
             </div>
             <div class="footer">
-                Smart Wallet Management (SWM) - Celebrating your financial wins.
+                <p>This is an automated message from Smart Wallet Manager (SWM).</p>
             </div>
         </div>
     </body>
