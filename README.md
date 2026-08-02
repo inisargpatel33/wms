@@ -76,8 +76,8 @@ Ensure you have the following installed:
 
 Open your terminal and run:
 
-git clone https://github.com/yourusername/swm.git
-cd swm
+git clone https://github.com/inisargpatel33/wms.git
+cd wms
 
 
 ### 3. Environment Setup & Dependencies
