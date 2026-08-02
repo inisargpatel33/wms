@@ -48,8 +48,8 @@ app.secret_key = "supersecretkey"
 app.config['MAIL_SERVER']   = 'smtp.gmail.com'
 app.config['MAIL_PORT']     = 587
 app.config['MAIL_USE_TLS']  = True
-app.config['MAIL_USERNAME'] = 'eventmanagementsys01@gmail.com'
-app.config['MAIL_PASSWORD'] = 'nuazzwirnwjwydba'
+app.config['MAIL_USERNAME'] = 'smartwalletmanagement@gmail.com'
+app.config['MAIL_PASSWORD'] = 'bycecrjrxatkkgbp'
 
 mail = Mail(app)
 

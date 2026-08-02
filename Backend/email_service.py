@@ -26,8 +26,8 @@ def _load_env():
 
 _env = _load_env()
 
-MAIL_USERNAME = _env.get('MAIL_USERNAME', 'eventmanagementsys01@gmail.com')
-MAIL_PASSWORD = _env.get('MAIL_PASSWORD', 'nuazzwirnwjwydba')  # fallback to hardcoded
+MAIL_USERNAME = _env.get('MAIL_USERNAME', 'smartwalletmanagement@gmail.com')
+MAIL_PASSWORD = _env.get('MAIL_PASSWORD', 'bycecrjrxatkkgbp')  # fallback to hardcoded
 MAIL_SERVER   = _env.get('MAIL_SERVER', 'smtp.gmail.com')
 MAIL_PORT     = int(_env.get('MAIL_PORT', 587))
 
