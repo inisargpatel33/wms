@@ -49,7 +49,11 @@ app.config['MAIL_SERVER']   = 'smtp.gmail.com'
 app.config['MAIL_PORT']     = 587
 app.config['MAIL_USE_TLS']  = True
 app.config['MAIL_USERNAME'] = 'smartwalletmanagement@gmail.com'
+<<<<<<< Updated upstream
 app.config['MAIL_PASSWORD'] = 'bycecrjrxatkkgbp'
+=======
+app.config['MAIL_PASSWORD'] = 'bycecrjrxatkkgbp'  # In production, use environment variables or a secure vault
+>>>>>>> Stashed changes
 
 mail = Mail(app)
 
@@ -254,7 +258,7 @@ def toggle_user_status(target_user_id):
             if new_status == 'suspended':
                 flash(f"{user['fullname']} has been suspended.", "error")
             else:
-                flash(f"{user['fullname']} has been reactivated.", "success")
+                flash(f"{user['fullname']} has been reactivated.", "unblock")
 
     except Exception as e:
         print("Error toggling user status:", e)
@@ -372,7 +376,7 @@ def login():
 # ==========================================
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
-    return render_template("/signup.html")
+    return render_template("signup.html")
 
 
 @app.route('/register', methods=['POST'])
