@@ -279,6 +279,7 @@
               <button type="button" onclick="document.getElementById('addFundsModal-{{ sw.id }}').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 bg-slate-50 p-2 rounded-full cursor-pointer"><span class="material-symbols-outlined text-sm">close</span></button>
             </div>
             <form action="{{ url_for('add_funds', sub_id=sw.id) }}" method="POST">
+                
               <div class="space-y-5">
                 <div>
                   <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Amount to Add</label>
@@ -485,6 +486,7 @@
       </button>
     </form>
     <form id="verify-payment-form" action="{{ url_for('verify_payment') }}" method="POST" class="hidden">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <input type="hidden" name="razorpay_payment_id" id="razorpay_payment_id">
       <input type="hidden" name="razorpay_order_id" id="razorpay_order_id">
       <input type="hidden" name="razorpay_signature" id="razorpay_signature">
@@ -501,34 +503,29 @@ document.getElementById('razorpay-payment-form').onsubmit = async function(e) {
     const wallet_source = document.getElementById('pay-wallet-source').value;
     const submitBtn = document.getElementById('rzp-button');
     
-    // 1. Hide the error box every time they click pay (to reset it)
     document.getElementById('payment-error-alert').classList.add('hidden');
-
     submitBtn.innerHTML = "Processing...";
     submitBtn.disabled = true;
 
     try {
         const response = await fetch("{{ url_for('create_order') }}", {
             method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            headers: { 
+                "Content-Type": "application/x-www-form-urlencoded",
+                "X-CSRFToken": "{{ csrf_token() }}"
+            },
             body: `amount=${amount}&wallet_source=${wallet_source}`
         });
         const data = await response.json();
 
-        // 2. The Bouncer Catcher! Check for backend errors here.
         if (data.error || !response.ok) {
-            // Put the Python error text into the HTML span
             document.getElementById('payment-error-text').innerText = data.error || "Payment failed to initialize.";
-            // Unhide the red warning box
             document.getElementById('payment-error-alert').classList.remove('hidden');
-            
-            // Reset button and STOP the function
             submitBtn.innerHTML = '<span class="material-symbols-outlined text-sm">lock</span> Pay via Razorpay';
             submitBtn.disabled = false;
             return;
         }
 
-        // 3. If no error, continue opening Razorpay normally
         var options = {
             "key": data.key, 
             "amount": data.amount * 100,
@@ -548,7 +545,6 @@ document.getElementById('razorpay-payment-form').onsubmit = async function(e) {
 
         var rzp1 = new Razorpay(options);
         rzp1.on('payment.failed', function (response){ 
-            // Show Razorpay failures in the custom HTML alert box too!
             document.getElementById('payment-error-text').innerText = "Payment Failed.";
             document.getElementById('payment-error-alert').classList.remove('hidden');
         });
@@ -583,6 +579,7 @@ document.getElementById('razorpay-payment-form').onsubmit = async function(e) {
       </button>
     </form>
     <form id="verify-add-form" action="{{ url_for('verify_add_funds') }}" method="POST" class="hidden">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <input type="hidden" name="razorpay_payment_id" id="add_razorpay_payment_id">
       <input type="hidden" name="razorpay_order_id" id="add_razorpay_order_id">
       <input type="hidden" name="razorpay_signature" id="add_razorpay_signature">
@@ -601,6 +598,7 @@ document.getElementById('razorpay-payment-form').onsubmit = async function(e) {
     </a>
 </nav>
 
+
 <script>
 document.getElementById('razorpay-add-form').onsubmit = async function(e) {
     e.preventDefault(); 
@@ -612,7 +610,10 @@ document.getElementById('razorpay-add-form').onsubmit = async function(e) {
     try {
         const response = await fetch("{{ url_for('create_add_funds_order') }}", {
             method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            headers: { 
+                "Content-Type": "application/x-www-form-urlencoded",
+                "X-CSRFToken": "{{ csrf_token() }}"
+            },
             body: `amount=${amount}`
         });
         const data = await response.json();

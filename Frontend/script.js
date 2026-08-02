@@ -1,7 +1,6 @@
 // No JavaScript required for this UI
 // Hover animation is handled fully by CSS
 
-
 console.log("Dashboard loaded");
 
 // Later:
@@ -11,10 +10,10 @@ console.log("Dashboard loaded");
 
 /* ===============================
    CATEGORY / SUB-WALLET LOGIC
-   =============================== */
+   =============================== 
+   */
 
 document.addEventListener("DOMContentLoaded", () => {
-
   /* ADD CATEGORY ELEMENTS */
   const addCategoryBtn = document.querySelector(".add-category-btn");
   const categoryModal = document.getElementById("categoryModal");
@@ -57,12 +56,28 @@ document.addEventListener("DOMContentLoaded", () => {
     accountDiv.className = "account";
     accountDiv.dataset.amount = amount; // store amount safely
 
-    accountDiv.innerHTML = `
-      <div class="left">
-        <span class="icon">${emoji}</span> ${name}
-      </div>
-      <div class="right">₹${amount} ›</div>
-    `;
+    // ---------------------------------------------------------
+    // SECURE XSS FIX: Build elements programmatically and use textContent
+    // instead of innerHTML to render user input.
+    // ---------------------------------------------------------
+    const leftDiv = document.createElement("div");
+    leftDiv.className = "left";
+
+    const iconSpan = document.createElement("span");
+    iconSpan.className = "icon";
+    iconSpan.textContent = emoji;
+
+    // Append the emoji span and then the text for the name safely
+    leftDiv.appendChild(iconSpan);
+    leftDiv.appendChild(document.createTextNode(` ${name}`));
+
+    const rightDiv = document.createElement("div");
+    rightDiv.className = "right";
+    rightDiv.textContent = `₹${amount} ›`;
+
+    accountDiv.appendChild(leftDiv);
+    accountDiv.appendChild(rightDiv);
+    // ---------------------------------------------------------
 
     /* CLICK CATEGORY → OPEN DISCARD MODAL */
     accountDiv.addEventListener("click", () => {
@@ -103,5 +118,4 @@ document.addEventListener("DOMContentLoaded", () => {
     categoryEmojiInput.value = "";
     categoryAmountInput.value = "";
   }
-
 });

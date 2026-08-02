@@ -1,83 +1,97 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WMS – Sign Up</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='landing/style.css') }}">
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WMS – Sign Up</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='landing/style.css') }}"
+    />
+  </head>
+  <body>
+    <header class="header">
+      <div class="logo">
+        <img
+          src="{{ url_for('static', filename='img/wallet.svg') }}"
+          alt="Wallet"
+        />
+        <span>WMS</span>
+      </div>
+      <a href="{{ url_for('index') }}" class="launch-btn">HOME</a>
+    </header>
 
-  <header class="header">
-    <div class="logo">
-      <img src="{{ url_for('static', filename='img/wallet.svg') }}" alt="Wallet">
-      <span>WMS</span>
-    </div>
-    <a href="{{ url_for('index') }}" class="launch-btn">HOME</a>
-  </header>
+    <main class="features-section">
+      <h1 class="features-title">Create your account</h1>
 
-  <main class="features-section">
-    <h1 class="features-title">Create your account</h1>
-
-    <div class="auth-card">
-
-      {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-          {% for category, message in messages %}
-            {% set text_color = '#28a745' if category == 'success' else '#dc3545' %}
-            {% set bg_color = '#e6ffe6' if category == 'success' else '#ffe6e6' %}
-            <p style="text-align:center;
+      <div class="auth-card">
+        {% with messages = get_flashed_messages(with_categories=true) %} {% if
+        messages %} {% for category, message in messages %} {% set text_color =
+        '#28a745' if category == 'success' else '#dc3545' %} {% set bg_color =
+        '#e6ffe6' if category == 'success' else '#ffe6e6' %}
+        <p
+          style="text-align:center;
                       margin-bottom:15px;
                       font-weight:bold;
                       color: {{ text_color }};
                       background-color: {{ bg_color }};
                       border: 1px solid {{ text_color }};
                       padding: 10px;
-                      border-radius: 8px;">
-              {{ message }}
-            </p>
-          {% endfor %}
-        {% endif %}
-      {% endwith %}
+                      border-radius: 8px;"
+        >
+          {{ message }}
+        </p>
+        {% endfor %} {% endif %} {% endwith %}
 
-      <form method="POST" action="{{ url_for('register') }}">
+        <form method="POST" action="{{ url_for('register') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          <div class="auth-field">
+            <label>Full Name</label>
+            <input type="text" name="name" required />
+          </div>
 
-        <div class="auth-field">
-          <label>Full Name</label>
-          <input type="text" name="name" required>
-        </div>
+          <div class="auth-field">
+            <label>Email</label>
+            <input type="email" name="email" required />
+          </div>
 
-        <div class="auth-field">
-          <label>Email</label>
-          <input type="email" name="email" required>
-        </div>
+          <div class="auth-field">
+            <label>Password</label>
+            <input type="password" name="password" required />
+          </div>
 
-        <div class="auth-field">
-          <label>Password</label>
-          <input type="password" name="password" required>
-        </div>
+          <div class="auth-field">
+            <label>Confirm Password</label>
+            <input type="password" name="confirm" required />
+          </div>
 
-        <div class="auth-field">
-          <label>Confirm Password</label>
-          <input type="password" name="confirm" required>
-        </div>
+          <div
+            style="
+              display: flex;
+              gap: 12px;
+              align-items: center;
+              justify-content: center;
+              margin-top: 15px;
+            "
+          >
+            <button type="submit" class="primary auth-btn">Sign Up</button>
 
-        <div style="display:flex; gap:12px; align-items:center; justify-content:center; margin-top:15px;">
-          <button type="submit" class="primary auth-btn">
-            Sign Up
-          </button>
-
-          <a href="{{ url_for('login') }}"
-             class="secondary"
-             style="padding:10px 20px; border-radius:8px; text-decoration:none; display:inline-flex; align-items:center;">
-            Sign In
-          </a>
-        </div>
-
-      </form>
-
-    </div>
-  </main>
-
-</body>
+            <a
+              href="{{ url_for('login') }}"
+              class="secondary"
+              style="
+                padding: 10px 20px;
+                border-radius: 8px;
+                text-decoration: none;
+                display: inline-flex;
+                align-items: center;
+              "
+            >
+              Sign In
+            </a>
+          </div>
+        </form>
+      </div>
+    </main>
+  </body>
 </html>

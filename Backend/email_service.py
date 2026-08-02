@@ -3,6 +3,10 @@ import smtplib
 import logging
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from dotenv import load_dotenv
+
+# Load environment variables from the .env file
+load_dotenv()
 
 logger = logging.getLogger(__name__)
 if not logger.handlers:
@@ -10,26 +14,11 @@ if not logger.handlers:
 
 # ---------------------------------------------------------------------------
 # CONFIGURATION
-# Try to load from .env file if it exists, otherwise fall back to hardcoded
 # ---------------------------------------------------------------------------
-def _load_env():
-    env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.env')
-    config = {}
-    if os.path.exists(env_path):
-        with open(env_path, 'r') as f:
-            for line in f:
-                line = line.strip()
-                if line and not line.startswith('#') and '=' in line:
-                    key, _, value = line.partition('=')
-                    config[key.strip()] = value.strip()
-    return config
-
-_env = _load_env()
-
-MAIL_USERNAME = _env.get('MAIL_USERNAME', 'smartwalletmanagement@gmail.com')
-MAIL_PASSWORD = _env.get('MAIL_PASSWORD', 'bycecrjrxatkkgbp')  # fallback to hardcoded
-MAIL_SERVER   = _env.get('MAIL_SERVER', 'smtp.gmail.com')
-MAIL_PORT     = int(_env.get('MAIL_PORT', 587))
+MAIL_USERNAME = os.getenv('MAIL_USERNAME', 'smartwalletmanagement@gmail.com')
+MAIL_PASSWORD = os.getenv('MAIL_PASSWORD') 
+MAIL_SERVER   = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
+MAIL_PORT     = int(os.getenv('MAIL_PORT', 587))
 
 if not MAIL_PASSWORD:
     print("WARNING: MAIL_PASSWORD not found in .env file. Emails will not send.")

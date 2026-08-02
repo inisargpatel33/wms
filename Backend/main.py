@@ -14,12 +14,17 @@ import os
 from flask_mail import Mail, Message
 import sys
 import logging
+from dotenv import load_dotenv
+from flask_wtf.csrf import CSRFProtect
+
+# Load environment variables from the .env file
+load_dotenv()
 
 logger = logging.getLogger(__name__)
 if not logger.handlers:
     logging.basicConfig(level=logging.INFO)
 
-# UTF-8 fix for Windows console (must be before any print with special chars)
+# UTF-8 fix for Windows console
 if sys.platform == "win32":
     try:
         sys.stdout.reconfigure(encoding='utf-8')
@@ -29,8 +34,8 @@ if sys.platform == "win32":
 # ---------------------------------------------------------------------------
 # RAZORPAY CONFIG
 # ---------------------------------------------------------------------------
-RAZORPAY_KEY_ID     = "rzp_test_SRa3Cn60azMF5E"
-RAZORPAY_KEY_SECRET = "dobJbw8U5fBTv5D6kRwWHk6E"
+RAZORPAY_KEY_ID     = os.getenv("RAZORPAY_KEY_ID")
+RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET")
 client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
 
 # ---------------------------------------------------------------------------
@@ -43,19 +48,20 @@ app = Flask(
     template_folder=os.path.join(base_dir, '../Frontend/landing'),
     static_folder=os.path.join(base_dir, '../Frontend')
 )
-app.secret_key = "supersecretkey"
+
+# SECURE FIX: Use a static fallback string so development reloads don't wipe sessions
+app.secret_key = os.getenv("FLASK_SECRET_KEY", "super_secret_fallback_key_123")
 
 app.config['MAIL_SERVER']   = 'smtp.gmail.com'
 app.config['MAIL_PORT']     = 587
 app.config['MAIL_USE_TLS']  = True
 app.config['MAIL_USERNAME'] = 'smartwalletmanagement@gmail.com'
-<<<<<<< Updated upstream
-app.config['MAIL_PASSWORD'] = 'bycecrjrxatkkgbp'
-=======
-app.config['MAIL_PASSWORD'] = 'bycecrjrxatkkgbp'  # In production, use environment variables or a secure vault
->>>>>>> Stashed changes
+app.config['MAIL_PASSWORD'] = os.getenv("MAIL_PASSWORD")
 
 mail = Mail(app)
+
+# Enable global CSRF protection
+csrf = CSRFProtect(app)
 
 # ---------------------------------------------------------------------------
 # DATABASE CONFIG
@@ -63,7 +69,17 @@ mail = Mail(app)
 db_config = {
     "host":     "localhost",
     "user":     "root",
-    "password": "",
+    "password": "", 
+    "database": "swm"
+}
+
+# ---------------------------------------------------------------------------
+# DATABASE CONFIG
+# ---------------------------------------------------------------------------
+db_config = {
+    "host":     "localhost",
+    "user":     "root",
+    "password": "", # Consider moving this to .env later if you set a DB password
     "database": "swm"
 }
 
@@ -776,11 +792,24 @@ def verify_payment():
     if 'user_id' not in session:
         return redirect(url_for('login'))
 
-    amount_spent  = float(request.form.get('amount', 0))
     wallet_source = request.form.get('wallet_source', 'main')
+    payment_id    = request.form.get('razorpay_payment_id')
+    order_id      = request.form.get('razorpay_order_id')
+    signature     = request.form.get('razorpay_signature')
 
-    conn, cursor = get_db_connection()
     try:
+        # 1. VERIFY SIGNATURE (This was missing!)
+        client.utility.verify_payment_signature({
+            'razorpay_order_id':   order_id,
+            'razorpay_payment_id': payment_id,
+            'razorpay_signature':  signature
+        })
+        
+        # 2. SECURE FIX: Fetch the true order amount from Razorpay
+        razorpay_order = client.order.fetch(order_id)
+        amount_spent = float(razorpay_order['amount']) / 100.0
+
+        conn, cursor = get_db_connection()
         # --- SCENARIO 1: MAIN WALLET (with Round-Up) ---
         if wallet_source == 'main':
             cursor.execute("SELECT balance FROM wallet WHERE user_id=%s", (session['user_id'],))
@@ -947,7 +976,6 @@ def verify_add_funds():
     payment_id = request.form.get('razorpay_payment_id')
     order_id   = request.form.get('razorpay_order_id')
     signature  = request.form.get('razorpay_signature')
-    amount     = float(request.form.get('amount', 0))
 
     try:
         client.utility.verify_payment_signature({
@@ -955,6 +983,10 @@ def verify_add_funds():
             'razorpay_payment_id': payment_id,
             'razorpay_signature':  signature
         })
+
+        # SECURE FIX: Fetch the true order amount from Razorpay
+        razorpay_order = client.order.fetch(order_id)
+        amount = float(razorpay_order['amount']) / 100.0
 
         conn, cursor = get_db_connection()
         cursor.execute("UPDATE wallet SET balance = balance + %s WHERE user_id=%s", (amount, session['user_id']))
@@ -1253,7 +1285,6 @@ def pay_goal(goal_id):
 
     return redirect(url_for('wallets'))
 
-
 # ==========================================
 # VERIFY GOAL PAYMENT (Razorpay)
 # ==========================================
@@ -1266,7 +1297,6 @@ def verify_goal_payment():
     order_id     = request.form.get('razorpay_order_id')
     signature    = request.form.get('razorpay_signature')
     goal_id      = request.form.get('goal_id')
-    amount_spent = float(request.form.get('amount_spent', 0))
 
     try:
         client.utility.verify_payment_signature({
@@ -1274,6 +1304,10 @@ def verify_goal_payment():
             'razorpay_payment_id': payment_id,
             'razorpay_signature':  signature
         })
+
+        # SECURE FIX: Fetch the true order amount from Razorpay
+        razorpay_order = client.order.fetch(order_id)
+        amount_spent = float(razorpay_order['amount']) / 100.0
 
         conn, cursor = get_db_connection()
 

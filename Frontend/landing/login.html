@@ -1,141 +1,207 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>WMS – Login</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='landing/style.css') }}" />
-</head>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WMS – Login</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='landing/style.css') }}"
+    />
+  </head>
 
-<body>
+  <body>
+    <header class="header">
+      <div class="logo">
+        <img src="{{ url_for('static', filename='img/wallet.svg') }}" alt="" />
+        <span>WMS</span>
+      </div>
+      <a href="{{ url_for('index') }}" class="launch-btn">HOME</a>
+    </header>
 
-  <header class="header">
-    <div class="logo">
-      <img src="{{ url_for('static', filename='img/wallet.svg') }}" alt="">
-      <span>WMS</span>
-    </div>
-    <a href="{{ url_for('index') }}" class="launch-btn">HOME</a>
-  </header>
+    <main class="features-section">
+      <h1 id="welcomeTitle" class="features-title">Welcome back</h1>
 
-  <main class="features-section">
-    <h1 id="welcomeTitle" class="features-title">Welcome back</h1>
-
-    <div class="auth-card">
-
-      {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-          {% for category, message in messages %}
-            {% set text_color = '#28a745' if category == 'success' else '#dc3545' %}
-            {% set bg_color = '#e6ffe6' if category == 'success' else '#ffe6e6' %}
-            <p style="text-align:center;
+      <div class="auth-card">
+        {% with messages = get_flashed_messages(with_categories=true) %} {% if
+        messages %} {% for category, message in messages %} {% set text_color =
+        '#28a745' if category == 'success' else '#dc3545' %} {% set bg_color =
+        '#e6ffe6' if category == 'success' else '#ffe6e6' %}
+        <p
+          style="text-align:center;
                       margin-bottom:15px;
                       font-weight:bold;
                       color: {{ text_color }};
                       background-color: {{ bg_color }};
                       border: 1px solid {{ text_color }};
                       padding: 10px;
-                      border-radius: 8px;">
-              {{ message }}
-            </p>
-          {% endfor %}
-        {% endif %}
-      {% endwith %}
+                      border-radius: 8px;"
+        >
+          {{ message }}
+        </p>
+        {% endfor %} {% endif %} {% endwith %}
 
-      <div style="display: flex; background: #f1f5f9; padding: 6px; border-radius: 10px; margin-bottom: 24px;">
-        <button type="button" id="btnUser" onclick="setLoginType('user')" 
-                style="flex: 1; padding: 10px; border: none; background: #ffffff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-radius: 6px; font-weight: bold; color: #1e293b; cursor: pointer; transition: all 0.3s ease;">
+        <div
+          style="
+            display: flex;
+            background: #f1f5f9;
+            padding: 6px;
+            border-radius: 10px;
+            margin-bottom: 24px;
+          "
+        >
+          <button
+            type="button"
+            id="btnUser"
+            onclick="setLoginType('user')"
+            style="
+              flex: 1;
+              padding: 10px;
+              border: none;
+              background: #ffffff;
+              box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+              border-radius: 6px;
+              font-weight: bold;
+              color: #1e293b;
+              cursor: pointer;
+              transition: all 0.3s ease;
+            "
+          >
             User
-        </button>
-        <button type="button" id="btnAdmin" onclick="setLoginType('admin')" 
-                style="flex: 1; padding: 10px; border: none; background: transparent; border-radius: 6px; font-weight: bold; color: #64748b; cursor: pointer; transition: all 0.3s ease;">
+          </button>
+          <button
+            type="button"
+            id="btnAdmin"
+            onclick="setLoginType('admin')"
+            style="
+              flex: 1;
+              padding: 10px;
+              border: none;
+              background: transparent;
+              border-radius: 6px;
+              font-weight: bold;
+              color: #64748b;
+              cursor: pointer;
+              transition: all 0.3s ease;
+            "
+          >
             Admin
-        </button>
+          </button>
+        </div>
+
+        <form action="{{ url_for('login') }}" method="POST">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          <input type="hidden" id="login_type" name="login_type" value="user" />
+
+          <div class="auth-field">
+            <label>Email</label>
+            <input name="email" type="email" required />
+          </div>
+
+          <div class="auth-field">
+            <label>Password</label>
+            <input name="password" type="password" required />
+          </div>
+
+          <div
+            style="
+              display: flex;
+              gap: 12px;
+              align-items: center;
+              justify-content: center;
+              margin-top: 12px;
+            "
+          >
+            <button type="submit" id="submitBtn" class="primary auth-btn">
+              Login
+            </button>
+          </div>
+        </form>
+
+        <div
+          style="
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            justify-content: center;
+            margin-top: 12px;
+            min-height: 40px;
+          "
+        >
+          <a
+            href="{{ url_for('signup') }}"
+            id="signupLink"
+            class="secondary"
+            style="
+              padding: 10px 20px;
+              border-radius: 8px;
+              text-decoration: none;
+              transition: opacity 0.3s ease;
+            "
+          >
+            Create Account
+          </a>
+
+          <a
+            href="{{ url_for('forgot_password_page') }}"
+            class="secondary"
+            style="
+              padding: 10px 20px;
+              border-radius: 8px;
+              text-decoration: none;
+            "
+            >Forget Password</a
+          >
+        </div>
       </div>
+    </main>
 
-      <form action="{{ url_for('login') }}" method="POST">
-        <input type="hidden" name="login_type" id="login_type" value="user">
+    <script>
+      function setLoginType(type) {
+        document.getElementById("login_type").value = type;
 
-        <div class="auth-field">
-          <label>Email</label>
-          <input name="email" type="email" required />
-        </div>
+        const btnUser = document.getElementById("btnUser");
+        const btnAdmin = document.getElementById("btnAdmin");
+        const title = document.getElementById("welcomeTitle");
+        const submitBtn = document.getElementById("submitBtn");
+        const signupLink = document.getElementById("signupLink");
 
-        <div class="auth-field">
-          <label>Password</label>
-          <input name="password" type="password" required />
-        </div>
+        if (type === "admin") {
+          // Admin Styling (Dark Mode switch)
+          btnAdmin.style.background = "#1e293b";
+          btnAdmin.style.color = "#ffffff";
+          btnAdmin.style.boxShadow = "0 1px 3px rgba(0,0,0,0.2)";
 
-        <div style="display:flex;gap:12px;align-items:center;justify-content:center;margin-top:12px;">
-          <button type="submit" id="submitBtn" class="primary auth-btn">Login</button>
-        </div>
+          btnUser.style.background = "transparent";
+          btnUser.style.color = "#64748b";
+          btnUser.style.boxShadow = "none";
 
-      </form>
+          title.innerText = "Admin Portal";
+          submitBtn.innerText = "Enter Command Center";
+          submitBtn.style.backgroundColor = "#1e293b"; // Darken the submit button
+          submitBtn.style.borderColor = "#1e293b";
 
-      <div style="display:flex;gap:12px;align-items:center;justify-content:center;margin-top:12px; min-height: 40px;">
-        
-        <a href="{{ url_for('signup') }}"
-           id="signupLink"
-           class="secondary"
-           style="padding:10px 20px;border-radius:8px;text-decoration:none; transition: opacity 0.3s ease;">
-          Create Account
-        </a>
-        
-        <a href="{{ url_for('forgot_password_page') }}"
-           class="secondary"
-           style="padding:10px 20px;border-radius:8px;text-decoration:none;">Forget Password</a>
-      </div>
-
-    </div>
-  </main>
-
-  <script>
-    function setLoginType(type) {
-        document.getElementById('login_type').value = type;
-        
-        const btnUser = document.getElementById('btnUser');
-        const btnAdmin = document.getElementById('btnAdmin');
-        const title = document.getElementById('welcomeTitle');
-        const submitBtn = document.getElementById('submitBtn');
-        const signupLink = document.getElementById('signupLink');
-
-        if (type === 'admin') {
-            // Admin Styling (Dark Mode switch)
-            btnAdmin.style.background = '#1e293b'; 
-            btnAdmin.style.color = '#ffffff';
-            btnAdmin.style.boxShadow = '0 1px 3px rgba(0,0,0,0.2)';
-
-            btnUser.style.background = 'transparent';
-            btnUser.style.color = '#64748b';
-            btnUser.style.boxShadow = 'none';
-
-            title.innerText = "Admin Portal";
-            submitBtn.innerText = "Enter Command Center";
-            submitBtn.style.backgroundColor = "#1e293b"; // Darken the submit button
-            submitBtn.style.borderColor = "#1e293b";
-
-            // Hide the Create Account button
-            signupLink.style.display = "none";
-
+          // Hide the Create Account button
+          signupLink.style.display = "none";
         } else {
-            // Normal User Styling (Light Mode switch)
-            btnUser.style.background = '#ffffff';
-            btnUser.style.color = '#1e293b';
-            btnUser.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+          // Normal User Styling (Light Mode switch)
+          btnUser.style.background = "#ffffff";
+          btnUser.style.color = "#1e293b";
+          btnUser.style.boxShadow = "0 1px 3px rgba(0,0,0,0.1)";
 
-            btnAdmin.style.background = 'transparent';
-            btnAdmin.style.color = '#64748b';
-            btnAdmin.style.boxShadow = 'none';
+          btnAdmin.style.background = "transparent";
+          btnAdmin.style.color = "#64748b";
+          btnAdmin.style.boxShadow = "none";
 
-            title.innerText = "Welcome back";
-            submitBtn.innerText = "Login";
-            submitBtn.style.backgroundColor = ""; // Resets to your CSS file's default color
-            submitBtn.style.borderColor = "";
+          title.innerText = "Welcome back";
+          submitBtn.innerText = "Login";
+          submitBtn.style.backgroundColor = ""; // Resets to your CSS file's default color
+          submitBtn.style.borderColor = "";
 
-            // Show the Create Account button
-            signupLink.style.display = "block";
+          // Show the Create Account button
+          signupLink.style.display = "block";
         }
-    }
-  </script>
-
-</body>
+      }
+    </script>
+  </body>
 </html>
